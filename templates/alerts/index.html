@@ -20,6 +20,19 @@
                 New Alert Form
             </button>
         </div>
+
+        <div class="notification is-info is-light mt-5">
+            <p class="mb-3"><strong>Django LiveView Demo</strong></p>
+            <p class="mb-2">This is a demonstration of Django LiveView capabilities. Features you'll see:</p>
+            <ul style="list-style: disc; margin-left: 1.5rem;">
+                <li><strong>Dynamic page changes:</strong> Click "New Alert Form" to navigate without page reload</li>
+                <li><strong>Form validation:</strong> Submit empty or invalid data to see real-time validation</li>
+                <li><strong>Real-time updates:</strong> Click "Add Random Alert" to see live table updates</li>
+                <li><strong>Modal interactions:</strong> Click "Details" on any alert to see modal with URL update</li>
+                <li><strong>Broadcast notifications:</strong> Notifications are seen by all connected users in real-time (try opening another browser to see the interaction)</li>
+                <li><strong>WebSocket communication:</strong> All interactions happen through WebSockets, no HTTP requests</li>
+            </ul>
+        </div>
     </div>
 </section>
 {% endblock %}
