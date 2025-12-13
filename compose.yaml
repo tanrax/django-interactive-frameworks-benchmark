@@ -27,3 +27,16 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.clear-alerts.schedule: "0 0 3 * * *"
+      ofelia.job-exec.clear-alerts.command: "python manage.py clear_alerts"
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    restart: unless-stopped
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - web
