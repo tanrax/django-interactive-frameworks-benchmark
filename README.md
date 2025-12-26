@@ -55,13 +55,27 @@ Comprehensive performance tests were conducted across all implementations to mea
 
 ### Performance Visualizations
 
-![Comprehensive Performance Comparison](plot_comprehensive.png)
+All charts indicate that **lower values are better** for optimal performance.
 
-*Comprehensive comparison showing average response time, network requests, data transfer, and performance stability across implementations.*
+#### Response Time Comparison
+![Response Time Comparison](plot_response_time.png)
 
-![Average Duration Comparison](plot_avg_duration.png)
+*Average response times across implementations. LiveView (9.35ms) is fastest, followed by HTMX (16.48ms), Unicorn (26.76ms), and SSR (47.25ms).*
 
-*Average response times: LiveView is fastest (WebSocket), followed by HTMX, Unicorn, and SSR (full page reload).*
+#### Network Requests per Action
+![Network Requests Comparison](plot_network_requests.png)
+
+*Number of HTTP requests required per action. LiveView uses 0 HTTP requests (WebSocket), while SSR requires 2 (POST + redirect).*
+
+#### Data Transfer Overhead
+![Data Transfer Comparison](plot_data_transfer.png)
+
+*Amount of data transferred per action. LiveView transfers minimal data (0.4 KB), while Unicorn transfers the most (71 KB).*
+
+#### Performance Stability
+![Performance Stability](plot_stability.png)
+
+*Response time consistency across 10 iterations. Lower and flatter lines indicate better, more stable performance.*
 
 ### Key Findings
 

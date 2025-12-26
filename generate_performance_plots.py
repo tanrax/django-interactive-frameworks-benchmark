@@ -188,60 +188,115 @@ def plot_iteration_trends(data, output_file='plot_iteration_trends.png'):
 	print(f"✓ Saved: {output_file}")
 	plt.close()
 
-def plot_comprehensive_comparison(data, output_file='plot_comprehensive.png'):
-	"""Create a comprehensive 2x2 subplot comparison"""
-	fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
-
+def plot_response_time_comparison(data, output_file='plot_response_time.png'):
+	"""Bar chart: Average Response Time - Lower is Better"""
 	implementations = list(data.keys())
+	averages = [np.mean([m['duration_ms'] for m in data[impl]]) for impl in implementations]
 	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
 
-	# 1. Average Duration (top-left)
-	averages = [np.mean([m['duration_ms'] for m in data[impl]]) for impl in implementations]
-	bars1 = ax1.bar(implementations, averages, color=colors, alpha=0.8, edgecolor='black')
-	for bar, avg in zip(bars1, averages):
-		height = bar.get_height()
-		ax1.text(bar.get_x() + bar.get_width()/2., height, f'{avg:.2f}ms',
-		         ha='center', va='bottom', fontweight='bold')
-	ax1.set_ylabel('Duration (ms)', fontweight='bold')
-	ax1.set_title('Average Response Time', fontweight='bold', fontsize=13)
-	ax1.grid(axis='y', alpha=0.3)
+	fig, ax = plt.subplots(figsize=(10, 6))
+	bars = ax.bar(implementations, averages, color=colors, alpha=0.8, edgecolor='black')
 
-	# 2. Network Requests (top-right)
+	for bar, avg in zip(bars, averages):
+		height = bar.get_height()
+		ax.text(bar.get_x() + bar.get_width()/2., height, f'{avg:.2f}ms',
+		        ha='center', va='bottom', fontweight='bold', fontsize=11)
+
+	ax.set_ylabel('Duration (ms)', fontweight='bold', fontsize=12)
+	ax.set_title('Average Response Time', fontweight='bold', fontsize=14)
+	ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+	# Add "Lower is Better" annotation
+	ax.text(0.98, 0.98, '⬇ Lower is Better', transform=ax.transAxes,
+	        fontsize=11, fontweight='bold', va='top', ha='right',
+	        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+	plt.tight_layout()
+	plt.savefig(output_file, dpi=300, bbox_inches='tight')
+	print(f"✓ Saved: {output_file}")
+	plt.close()
+
+def plot_network_requests_comparison(data, output_file='plot_network_requests.png'):
+	"""Bar chart: Network Requests - Lower is Better"""
+	implementations = list(data.keys())
 	avg_requests = [np.mean([m['network_requests'] for m in data[impl]]) for impl in implementations]
-	bars2 = ax2.bar(implementations, avg_requests, color=colors, alpha=0.8, edgecolor='black')
-	for bar, req in zip(bars2, avg_requests):
-		height = bar.get_height()
-		ax2.text(bar.get_x() + bar.get_width()/2., height, f'{req:.1f}',
-		         ha='center', va='bottom', fontweight='bold')
-	ax2.set_ylabel('HTTP Requests', fontweight='bold')
-	ax2.set_title('Network Requests per Action', fontweight='bold', fontsize=13)
-	ax2.grid(axis='y', alpha=0.3)
+	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
 
-	# 3. Bytes Transferred (bottom-left)
+	fig, ax = plt.subplots(figsize=(10, 6))
+	bars = ax.bar(implementations, avg_requests, color=colors, alpha=0.8, edgecolor='black')
+
+	for bar, req in zip(bars, avg_requests):
+		height = bar.get_height()
+		ax.text(bar.get_x() + bar.get_width()/2., height, f'{req:.1f}',
+		        ha='center', va='bottom', fontweight='bold', fontsize=11)
+
+	ax.set_ylabel('HTTP Requests per Action', fontweight='bold', fontsize=12)
+	ax.set_title('Network Requests per Action', fontweight='bold', fontsize=14)
+	ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+	# Add "Lower is Better" annotation
+	ax.text(0.98, 0.98, '⬇ Lower is Better', transform=ax.transAxes,
+	        fontsize=11, fontweight='bold', va='top', ha='right',
+	        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+	plt.tight_layout()
+	plt.savefig(output_file, dpi=300, bbox_inches='tight')
+	print(f"✓ Saved: {output_file}")
+	plt.close()
+
+def plot_data_transfer_comparison(data, output_file='plot_data_transfer.png'):
+	"""Bar chart: Data Transfer - Lower is Better"""
+	implementations = list(data.keys())
 	avg_bytes = [np.mean([m['total_bytes'] for m in data[impl]]) / 1024 for impl in implementations]
-	bars3 = ax3.bar(implementations, avg_bytes, color=colors, alpha=0.8, edgecolor='black')
-	for bar, kb in zip(bars3, avg_bytes):
-		height = bar.get_height()
-		ax3.text(bar.get_x() + bar.get_width()/2., height, f'{kb:.1f} KB',
-		         ha='center', va='bottom', fontweight='bold')
-	ax3.set_ylabel('Data Transfer (KB)', fontweight='bold')
-	ax3.set_title('Network Overhead', fontweight='bold', fontsize=13)
-	ax3.grid(axis='y', alpha=0.3)
+	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
 
-	# 4. Iteration Trends (bottom-right)
+	fig, ax = plt.subplots(figsize=(10, 6))
+	bars = ax.bar(implementations, avg_bytes, color=colors, alpha=0.8, edgecolor='black')
+
+	for bar, kb in zip(bars, avg_bytes):
+		height = bar.get_height()
+		ax.text(bar.get_x() + bar.get_width()/2., height, f'{kb:.1f} KB',
+		        ha='center', va='bottom', fontweight='bold', fontsize=11)
+
+	ax.set_ylabel('Data Transfer (KB)', fontweight='bold', fontsize=12)
+	ax.set_title('Network Overhead - Data Transfer per Action', fontweight='bold', fontsize=14)
+	ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+	# Add "Lower is Better" annotation
+	ax.text(0.98, 0.98, '⬇ Lower is Better', transform=ax.transAxes,
+	        fontsize=11, fontweight='bold', va='top', ha='right',
+	        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+	plt.tight_layout()
+	plt.savefig(output_file, dpi=300, bbox_inches='tight')
+	print(f"✓ Saved: {output_file}")
+	plt.close()
+
+def plot_stability_comparison(data, output_file='plot_stability.png'):
+	"""Line chart: Performance Stability - Lower and Flatter is Better"""
+	implementations = list(data.keys())
+	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
 	markers = ['o', 's', '^', 'd']
+
+	fig, ax = plt.subplots(figsize=(12, 6))
+
 	for (impl, color, marker) in zip(implementations, colors, markers):
 		iterations = [m['iteration'] for m in data[impl]]
 		durations = [m['duration_ms'] for m in data[impl]]
-		ax4.plot(iterations, durations, marker=marker, color=color, linewidth=2,
-		         markersize=6, label=impl, alpha=0.8)
-	ax4.set_xlabel('Iteration', fontweight='bold')
-	ax4.set_ylabel('Duration (ms)', fontweight='bold')
-	ax4.set_title('Performance Stability', fontweight='bold', fontsize=13)
-	ax4.legend(loc='best')
-	ax4.grid(True, alpha=0.3)
+		ax.plot(iterations, durations, marker=marker, color=color, linewidth=2,
+		        markersize=8, label=impl, alpha=0.8)
 
-	fig.suptitle('Alert System Performance Comparison', fontsize=16, fontweight='bold', y=0.995)
+	ax.set_xlabel('Iteration', fontweight='bold', fontsize=12)
+	ax.set_ylabel('Duration (ms)', fontweight='bold', fontsize=12)
+	ax.set_title('Performance Stability Across Iterations', fontweight='bold', fontsize=14)
+	ax.legend(loc='best', fontsize=11)
+	ax.grid(True, alpha=0.3, linestyle='--')
+
+	# Add "Lower is Better" annotation
+	ax.text(0.98, 0.98, '⬇ Lower & Flatter is Better', transform=ax.transAxes,
+	        fontsize=11, fontweight='bold', va='top', ha='right',
+	        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
 	plt.tight_layout()
 	plt.savefig(output_file, dpi=300, bbox_inches='tight')
 	print(f"✓ Saved: {output_file}")
@@ -262,7 +317,12 @@ def main():
 		plot_timing_breakdown(data)
 		plot_network_overhead(data)
 		plot_iteration_trends(data)
-		plot_comprehensive_comparison(data)
+
+		# Generate 4 separate comparison plots
+		plot_response_time_comparison(data)
+		plot_network_requests_comparison(data)
+		plot_data_transfer_comparison(data)
+		plot_stability_comparison(data)
 
 		print("\n" + "="*80)
 		print("✓ All plots generated successfully!")
@@ -273,7 +333,11 @@ def main():
 		print("  - plot_timing_breakdown.png      (Network timing breakdown)")
 		print("  - plot_network_overhead.png      (Data transfer comparison)")
 		print("  - plot_iteration_trends.png      (Performance stability)")
-		print("  - plot_comprehensive.png         (All-in-one comparison)")
+		print("\n  Individual comparison plots (with 'Lower is Better' indicators):")
+		print("  - plot_response_time.png         (Response time comparison)")
+		print("  - plot_network_requests.png      (Network requests comparison)")
+		print("  - plot_data_transfer.png         (Data transfer comparison)")
+		print("  - plot_stability.png             (Performance stability)")
 
 	except Exception as e:
 		print(f"\n✗ Error: {e}")
