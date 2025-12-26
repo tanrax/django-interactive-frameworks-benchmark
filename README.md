@@ -9,8 +9,6 @@ Same alert system, 4 different Django technologies. Compare WebSockets, SSR, HTM
 | **Transport** | WebSocket | HTTP | AJAX | AJAX |
 | **Update Type** | Real-time | Full reload | Partial | Reactive |
 | **Multi-user** | ✅ Broadcast | ❌ | ❌ | ❌ |
-| **JavaScript** | Minimal | None | None | None |
-| **Complexity** | High | Low | Medium | Medium |
 | **Infrastructure** | Redis + Channels | Django only | Django only | Django only |
 | **Best For** | Live dashboards | Traditional apps | Modern UX | Interactive forms |
 
