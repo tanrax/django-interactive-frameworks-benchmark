@@ -1,0 +1,77 @@
+{% extends "alerts/ssr/base.html" %}
+
+{% block title %}Home - Alert System SSR{% endblock %}
+
+{% block content %}
+<section class="section">
+	<div class="container">
+		<h1 class="title">Alert System (SSR)</h1>
+		<h2 class="subtitle">Standard Django with full page reloads</h2>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Type</th>
+						<th>Description</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for alert in alerts %}
+					<tr>
+						<td>{{ alert.id }}</td>
+						<td>
+							<span class="tag {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+								{{ alert.type }}
+							</span>
+						</td>
+						<td>{{ alert.description|truncatewords:10 }}</td>
+						<td>
+							<a href="{% url 'alerts:ssr_alert_detail' alert.id %}" class="button is-small is-info">
+								Details
+							</a>
+							<form method="post" action="{% url 'alerts:ssr_delete_alert' alert.id %}" style="display: inline;">
+								{% csrf_token %}
+								<button type="submit" class="button is-small is-danger ml-1" onclick="return confirm('Are you sure?')">
+									Delete
+								</button>
+							</form>
+						</td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td colspan="4" class="has-text-centered">No alerts yet</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<div class="mt-5">
+			<form method="post" action="{% url 'alerts:ssr_create_random_alert' %}" style="display: inline;">
+				{% csrf_token %}
+				<button type="submit" class="button is-primary">
+					Add Random Alert
+				</button>
+			</form>
+			<a href="{% url 'alerts:ssr_create_alert' %}" class="button is-link ml-2">
+				New Alert Form
+			</a>
+		</div>
+
+		<div class="notification is-info is-light mt-5">
+			<p class="mb-3"><strong>Standard Django (SSR) Demo</strong></p>
+			<p class="mb-2">This version uses traditional Django patterns:</p>
+			<ul style="list-style: disc; margin-left: 1.5rem;">
+				<li><strong>Full page reloads:</strong> Every action triggers a complete page refresh</li>
+				<li><strong>Traditional forms:</strong> POST requests with redirects</li>
+				<li><strong>Django messages:</strong> Notifications shown after redirect</li>
+				<li><strong>No JavaScript framework:</strong> Pure server-side rendering</li>
+				<li><strong>No real-time updates:</strong> Must manually refresh to see changes from other users</li>
+			</ul>
+		</div>
+	</div>
+</section>
+{% endblock %}

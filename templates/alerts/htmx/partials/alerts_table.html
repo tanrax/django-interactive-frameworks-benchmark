@@ -1,0 +1,44 @@
+<table class="table is-fullwidth is-striped" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Type</th>
+			<th>Description</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for alert in alerts %}
+		<tr>
+			<td>{{ alert.id }}</td>
+			<td>
+				<span class="tag {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+					{{ alert.type }}
+				</span>
+			</td>
+			<td>{{ alert.description|truncatewords:10 }}</td>
+			<td>
+				<button
+					class="button is-small is-info"
+					hx-get="{% url 'alerts:htmx_alert_detail' alert.id %}"
+					hx-target="#modal-container"
+					hx-swap="innerHTML">
+					Details
+				</button>
+				<button
+					class="button is-small is-danger ml-1"
+					hx-delete="{% url 'alerts:htmx_delete_alert' alert.id %}"
+					hx-target="#alerts-table-content"
+					hx-swap="innerHTML"
+					hx-confirm="Are you sure you want to delete this alert?">
+					Delete
+				</button>
+			</td>
+		</tr>
+		{% empty %}
+		<tr>
+			<td colspan="4" class="has-text-centered">No alerts yet</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>

@@ -1,0 +1,51 @@
+{% extends "alerts/ssr/base.html" %}
+
+{% block title %}Alert #{{ alert.id }} - SSR{% endblock %}
+
+{% block content %}
+<section class="section">
+	<div class="container">
+		<h1 class="title">Alert Details</h1>
+
+		<div class="box" style="max-width: 600px;">
+			<div class="field">
+				<label class="label">ID</label>
+				<p>{{ alert.id }}</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Type</label>
+				<p>
+					<span class="tag is-large {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+						{{ alert.type }}
+					</span>
+				</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Description</label>
+				<p>{{ alert.description|default:"No description provided" }}</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Created At</label>
+				<p>{{ alert.created_at }}</p>
+			</div>
+
+			<div class="field is-grouped mt-5">
+				<div class="control">
+					<a href="{% url 'alerts:ssr_index' %}" class="button is-link">Back to List</a>
+				</div>
+				<div class="control">
+					<form method="post" action="{% url 'alerts:ssr_delete_alert' alert.id %}" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" class="button is-danger" onclick="return confirm('Are you sure you want to delete this alert?')">
+							Delete Alert
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}

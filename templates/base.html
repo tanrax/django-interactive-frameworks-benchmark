@@ -10,6 +10,30 @@
     <script src="{% static 'liveview/liveview.min.js' %}" defer></script>
 </head>
 <body class="has-background-white">
+    <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <div class="navbar-item">
+                <strong>Alert System Demo</strong>
+            </div>
+        </div>
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a href="/" class="navbar-item is-active has-background-primary has-text-white">
+                    Django LiveView
+                </a>
+                <a href="/ssr/" class="navbar-item">
+                    SSR
+                </a>
+                <a href="/htmx/" class="navbar-item">
+                    HTMX
+                </a>
+                <a href="/unicorn/" class="navbar-item">
+                    Django Unicorn
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <div id="notifications" class="notifications-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000; width: 300px;"></div>
     <div id="modal-container"></div>
     {% block content %}{% endblock %}

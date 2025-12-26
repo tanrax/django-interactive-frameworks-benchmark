@@ -4,8 +4,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('alerts.urls')),
+	path('admin/', admin.site.urls),
+	path('unicorn/', include('django_unicorn.urls')),
+	path('', include('alerts.urls')),
 ]
 
 if settings.DEBUG:

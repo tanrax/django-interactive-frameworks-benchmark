@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="csrf-token" content="{{ csrf_token }}">
+	<title>{% block title %}Alert System - HTMX{% endblock %}</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+	<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			document.body.addEventListener('htmx:configRequest', function(event) {
+				event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
+			});
+		});
+	</script>
+</head>
+<body class="has-background-white" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+	<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+		<div class="navbar-brand">
+			<div class="navbar-item">
+				<strong>Alert System Demo</strong>
+			</div>
+		</div>
+		<div class="navbar-menu">
+			<div class="navbar-start">
+				<a href="/" class="navbar-item">
+					Django LiveView
+				</a>
+				<a href="/ssr/" class="navbar-item">
+					SSR
+				</a>
+				<a href="/htmx/" class="navbar-item is-active has-background-primary has-text-white">
+					HTMX
+				</a>
+				<a href="/unicorn/" class="navbar-item">
+					Django Unicorn
+				</a>
+			</div>
+		</div>
+	</nav>
+
+	<div id="notifications" class="notifications-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000; width: 300px;"></div>
+	<div id="modal-container"></div>
+
+	{% block content %}{% endblock %}
+
+	<footer class="footer mt-6">
+		<div class="content has-text-centered">
+			<p>
+				Built with <strong>HTMX + Django</strong> - Partial HTML updates
+				| <a href="/" rel="noopener noreferrer">Django LiveView version</a>
+			</p>
+		</div>
+	</footer>
+
+	<script>
+		document.body.addEventListener('showNotification', function(evt) {
+			var notification = document.createElement('div');
+			notification.className = 'notification is-' + (evt.detail.type === 'success' ? 'success' : 'danger');
+			notification.innerHTML = '<button class="delete" onclick="this.parentElement.remove()"></button>' + evt.detail.message;
+			document.getElementById('notifications').appendChild(notification);
+
+			setTimeout(function() {
+				notification.style.transition = 'opacity 0.5s';
+				notification.style.opacity = '0';
+				setTimeout(function() {
+					notification.remove();
+				}, 500);
+			}, 3000);
+		});
+	</script>
+</body>
+</html>

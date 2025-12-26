@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %}Alert System - SSR{% endblock %}</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+</head>
+<body class="has-background-white">
+	<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+		<div class="navbar-brand">
+			<div class="navbar-item">
+				<strong>Alert System Demo</strong>
+			</div>
+		</div>
+		<div class="navbar-menu">
+			<div class="navbar-start">
+				<a href="/" class="navbar-item">
+					Django LiveView
+				</a>
+				<a href="/ssr/" class="navbar-item is-active has-background-primary has-text-white">
+					SSR
+				</a>
+				<a href="/htmx/" class="navbar-item">
+					HTMX
+				</a>
+				<a href="/unicorn/" class="navbar-item">
+					Django Unicorn
+				</a>
+			</div>
+		</div>
+	</nav>
+
+	<div id="notifications" class="notifications-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000; width: 300px;">
+		{% if messages %}
+			{% for message in messages %}
+			<div class="notification is-{{ message.tags }}">
+				<button class="delete" onclick="this.parentElement.remove()"></button>
+				{{ message }}
+			</div>
+			{% endfor %}
+		{% endif %}
+	</div>
+
+	{% block content %}{% endblock %}
+
+	<footer class="footer mt-6">
+		<div class="content has-text-centered">
+			<p>
+				Built with <strong>Standard Django (SSR)</strong> - Full page reloads
+				| <a href="/" rel="noopener noreferrer">Django LiveView version</a>
+			</p>
+		</div>
+	</footer>
+
+	<script>
+		setTimeout(function() {
+			var notifications = document.querySelectorAll('.notification');
+			notifications.forEach(function(notification) {
+				notification.style.transition = 'opacity 0.5s';
+				notification.style.opacity = '0';
+				setTimeout(function() {
+					notification.remove();
+				}, 500);
+			});
+		}, 3000);
+	</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "alerts/ssr/base.html" %}
+
+{% block title %}New Alert - SSR{% endblock %}
+
+{% block content %}
+<section class="section">
+	<div class="container">
+		<h1 class="title">Create New Alert</h1>
+		<h2 class="subtitle">Standard Django Form</h2>
+
+		<div class="box" style="max-width: 600px;">
+			<form method="post">
+				{% csrf_token %}
+
+				<div class="field">
+					<label class="label">{{ form.type.label }}</label>
+					<div class="control">
+						<div class="select is-fullwidth">
+							{{ form.type }}
+						</div>
+					</div>
+					{% if form.type.errors %}
+						<p class="help is-danger">{{ form.type.errors.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field">
+					<label class="label">{{ form.description.label }}</label>
+					<div class="control">
+						{{ form.description }}
+					</div>
+					{% if form.description.errors %}
+						<p class="help is-danger">{{ form.description.errors.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field is-grouped">
+					<div class="control">
+						<button type="submit" class="button is-primary">Create Alert</button>
+					</div>
+					<div class="control">
+						<a href="{% url 'alerts:ssr_index' %}" class="button is-light">Cancel</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+{% endblock %}

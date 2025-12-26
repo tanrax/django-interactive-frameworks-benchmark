@@ -1,0 +1,88 @@
+{% load unicorn %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Alert System - Django Unicorn</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+	{% unicorn_scripts %}
+</head>
+<body class="has-background-white">
+	{% csrf_token %}
+
+	<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+		<div class="navbar-brand">
+			<div class="navbar-item">
+				<strong>Alert System Demo</strong>
+			</div>
+		</div>
+		<div class="navbar-menu">
+			<div class="navbar-start">
+				<a href="/" class="navbar-item">
+					Django LiveView
+				</a>
+				<a href="/ssr/" class="navbar-item">
+					SSR
+				</a>
+				<a href="/htmx/" class="navbar-item">
+					HTMX
+				</a>
+				<a href="/unicorn/" class="navbar-item is-active has-background-primary has-text-white">
+					Django Unicorn
+				</a>
+			</div>
+		</div>
+	</nav>
+
+	<div id="notifications" class="notifications-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000; width: 300px;"></div>
+
+	<section class="section">
+		<div class="container">
+			<h1 class="title">Alert System (Django Unicorn)</h1>
+			<h2 class="subtitle">Reactive components with two-way data binding</h2>
+
+			{% unicorn 'alert-list' %}
+
+			<div class="notification is-info is-light mt-5">
+				<p class="mb-3"><strong>Django Unicorn Demo</strong></p>
+				<p class="mb-2">This version uses Django Unicorn for reactive updates:</p>
+				<ul style="list-style: disc; margin-left: 1.5rem;">
+					<li><strong>Reactive components:</strong> Python classes with two-way data binding</li>
+					<li><strong>No JavaScript code:</strong> All logic in Python, updates via AJAX</li>
+					<li><strong>Form validation:</strong> Real-time validation with Django forms</li>
+					<li><strong>Component state:</strong> State managed in Python, synced to frontend</li>
+					<li><strong>Single-user reactivity:</strong> Updates within one user session</li>
+					<li><strong>Minimal overhead:</strong> Lighter than WebSockets, uses AJAX</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<footer class="footer mt-6">
+		<div class="content has-text-centered">
+			<p>
+				Built with <strong>Django Unicorn</strong> - Reactive components
+				| <a href="/" rel="noopener noreferrer">Django LiveView version</a>
+			</p>
+		</div>
+	</footer>
+
+	<script>
+		function showNotification(message, type) {
+			var notification = document.createElement('div');
+			notification.className = 'notification is-' + (type === 'success' ? 'success' : 'danger');
+			notification.innerHTML = '<button class="delete" onclick="this.parentElement.remove()"></button>' + message;
+			document.getElementById('notifications').appendChild(notification);
+
+			setTimeout(function() {
+				notification.style.transition = 'opacity 0.5s';
+				notification.style.opacity = '0';
+				setTimeout(function() {
+					notification.remove();
+				}, 500);
+			}, 3000);
+		}
+	</script>
+</body>
+</html>

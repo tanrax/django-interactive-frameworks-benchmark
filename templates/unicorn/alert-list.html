@@ -1,0 +1,159 @@
+<div>
+	<!-- Alerts Table -->
+	<div class="table-container">
+		<table class="table is-fullwidth is-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Type</th>
+					<th>Description</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for alert in alerts %}
+				<tr>
+					<td>{{ alert.id }}</td>
+					<td>
+						<span class="tag {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+							{{ alert.type }}
+						</span>
+					</td>
+					<td>{{ alert.description|truncatewords:10 }}</td>
+					<td>
+						<button
+							unicorn:click="show_detail({{ alert.id }})"
+							class="button is-small is-info">
+							Details
+						</button>
+						<button
+							unicorn:click="delete_alert({{ alert.id }})"
+							class="button is-small is-danger ml-1"
+							onclick="return confirm('Are you sure you want to delete this alert?')">
+							Delete
+						</button>
+					</td>
+				</tr>
+				{% empty %}
+				<tr>
+					<td colspan="4" class="has-text-centered">No alerts yet</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Action Buttons -->
+	<div class="mt-5">
+		<button
+			unicorn:click="create_random_alert"
+			class="button is-primary">
+			Add Random Alert
+		</button>
+		<button
+			unicorn:click="show_create_form"
+			class="button is-link ml-2">
+			New Alert Form
+		</button>
+	</div>
+
+	<!-- Detail Modal -->
+	{% if show_modal and selected_alert %}
+	<div class="modal is-active">
+		<div class="modal-background" unicorn:click="close_modal"></div>
+		<div class="modal-card">
+			<header class="modal-card-head">
+				<p class="modal-card-title">Alert #{{ selected_alert.id }} Details</p>
+				<button class="delete" aria-label="close" unicorn:click="close_modal"></button>
+			</header>
+			<section class="modal-card-body">
+				<div class="field">
+					<label class="label">ID</label>
+					<p>{{ selected_alert.id }}</p>
+				</div>
+
+				<div class="field">
+					<label class="label">Type</label>
+					<p>
+						<span class="tag is-large {% if selected_alert.type == 'INFO' %}is-info{% elif selected_alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+							{{ selected_alert.type }}
+						</span>
+					</p>
+				</div>
+
+				<div class="field">
+					<label class="label">Description</label>
+					<p>{{ selected_alert.description }}</p>
+				</div>
+
+				<div class="field">
+					<label class="label">Created At</label>
+					<p>{{ selected_alert.created_at }}</p>
+				</div>
+			</section>
+			<footer class="modal-card-foot">
+				<button
+					unicorn:click="delete_alert({{ selected_alert.id }})"
+					class="button is-danger"
+					onclick="return confirm('Are you sure you want to delete this alert?')">
+					Delete Alert
+				</button>
+				<button unicorn:click="close_modal" class="button">Close</button>
+			</footer>
+		</div>
+	</div>
+	{% endif %}
+
+	<!-- Create Modal -->
+	{% if show_create_modal %}
+	<div class="modal is-active">
+		<div class="modal-background" unicorn:click="close_create_modal"></div>
+		<div class="modal-card">
+			<header class="modal-card-head">
+				<p class="modal-card-title">Create New Alert</p>
+				<button class="delete" aria-label="close" unicorn:click="close_create_modal"></button>
+			</header>
+			<section class="modal-card-body">
+				<div class="field">
+					<label class="label">Type</label>
+					<div class="control">
+						<div class="select is-fullwidth">
+							<select unicorn:model="type">
+								<option value="">---------</option>
+								<option value="INFO">Info</option>
+								<option value="WARNING">Warning</option>
+								<option value="CRITICAL">Critical</option>
+							</select>
+						</div>
+					</div>
+					{% if unicorn.errors.type %}
+						<p class="help is-danger">{{ unicorn.errors.type.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field">
+					<label class="label">Description</label>
+					<div class="control">
+						<textarea
+							unicorn:model.lazy="description"
+							class="textarea"
+							rows="4"></textarea>
+					</div>
+					{% if unicorn.errors.description %}
+						<p class="help is-danger">{{ unicorn.errors.description.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field is-grouped">
+					<div class="control">
+						<button unicorn:click="create_alert" class="button is-primary">Create Alert</button>
+					</div>
+					<div class="control">
+						<button unicorn:click="close_create_modal" class="button is-light">Cancel</button>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	{% endif %}
+</div>

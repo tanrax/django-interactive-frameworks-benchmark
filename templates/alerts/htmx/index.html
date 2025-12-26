@@ -1,0 +1,48 @@
+{% extends "alerts/htmx/base.html" %}
+
+{% block title %}Home - Alert System HTMX{% endblock %}
+
+{% block content %}
+<section class="section">
+	<div class="container">
+		<h1 class="title">Alert System (HTMX)</h1>
+		<h2 class="subtitle">Partial HTML updates without page reload</h2>
+
+		<div class="table-container">
+			<div id="alerts-table-content">
+				{% include 'alerts/htmx/partials/alerts_table.html' %}
+			</div>
+		</div>
+
+		<div class="mt-5" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+			<button
+				class="button is-primary"
+				hx-post="{% url 'alerts:htmx_create_random_alert' %}"
+				hx-target="#alerts-table-content"
+				hx-swap="innerHTML">
+				Add Random Alert
+			</button>
+			<button
+				class="button is-link ml-2"
+				hx-get="{% url 'alerts:htmx_create_alert' %}"
+				hx-target="#modal-container"
+				hx-swap="innerHTML">
+				New Alert Form
+			</button>
+		</div>
+
+		<div class="notification is-info is-light mt-5">
+			<p class="mb-3"><strong>HTMX + Django Demo</strong></p>
+			<p class="mb-2">This version uses HTMX for dynamic updates:</p>
+			<ul style="list-style: disc; margin-left: 1.5rem;">
+				<li><strong>Partial updates:</strong> Only the relevant parts of the page are refreshed</li>
+				<li><strong>No page reload:</strong> AJAX requests update content in-place</li>
+				<li><strong>Modal interactions:</strong> Forms appear in modals without navigation</li>
+				<li><strong>Real-time notifications:</strong> Custom events trigger UI updates</li>
+				<li><strong>No JavaScript code:</strong> All interactivity defined in HTML attributes</li>
+				<li><strong>Single-user updates:</strong> Changes don't broadcast to other users (use polling if needed)</li>
+			</ul>
+		</div>
+	</div>
+</section>
+{% endblock %}

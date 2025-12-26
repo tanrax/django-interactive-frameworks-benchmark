@@ -1,0 +1,49 @@
+<div class="modal is-active">
+	<div class="modal-background" hx-on:click="document.getElementById('modal-container').innerHTML = ''"></div>
+	<div class="modal-card">
+		<header class="modal-card-head">
+			<p class="modal-card-title">Create New Alert</p>
+			<button class="delete" aria-label="close" hx-on:click="document.getElementById('modal-container').innerHTML = ''"></button>
+		</header>
+		<section class="modal-card-body">
+			<form
+				hx-post="{% url 'alerts:htmx_create_alert' %}"
+				hx-target="#alerts-table-content"
+				hx-swap="innerHTML"
+				hx-on::after-request="if(event.detail.successful) document.getElementById('modal-container').innerHTML = ''">
+				{% csrf_token %}
+
+				<div class="field">
+					<label class="label">{{ form.type.label }}</label>
+					<div class="control">
+						<div class="select is-fullwidth">
+							{{ form.type }}
+						</div>
+					</div>
+					{% if form.type.errors %}
+						<p class="help is-danger">{{ form.type.errors.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field">
+					<label class="label">{{ form.description.label }}</label>
+					<div class="control">
+						{{ form.description }}
+					</div>
+					{% if form.description.errors %}
+						<p class="help is-danger">{{ form.description.errors.0 }}</p>
+					{% endif %}
+				</div>
+
+				<div class="field is-grouped">
+					<div class="control">
+						<button type="submit" class="button is-primary">Create Alert</button>
+					</div>
+					<div class="control">
+						<button type="button" class="button is-light" hx-on:click="document.getElementById('modal-container').innerHTML = ''">Cancel</button>
+					</div>
+				</div>
+			</form>
+		</section>
+	</div>
+</div>

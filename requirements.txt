@@ -4,3 +4,5 @@ channels-redis==4.2.1
 daphne==4.1.2
 django-liveview==2.1.7
 redis==5.2.1
+django-unicorn==0.62.0
+django-htmx==1.22.0

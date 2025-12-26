@@ -1,0 +1,46 @@
+<div class="modal is-active">
+	<div class="modal-background" hx-on:click="document.getElementById('modal-container').innerHTML = ''"></div>
+	<div class="modal-card">
+		<header class="modal-card-head">
+			<p class="modal-card-title">Alert #{{ alert.id }} Details</p>
+			<button class="delete" aria-label="close" hx-on:click="document.getElementById('modal-container').innerHTML = ''"></button>
+		</header>
+		<section class="modal-card-body">
+			<div class="field">
+				<label class="label">ID</label>
+				<p>{{ alert.id }}</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Type</label>
+				<p>
+					<span class="tag is-large {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+						{{ alert.type }}
+					</span>
+				</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Description</label>
+				<p>{{ alert.description|default:"No description provided" }}</p>
+			</div>
+
+			<div class="field">
+				<label class="label">Created At</label>
+				<p>{{ alert.created_at }}</p>
+			</div>
+		</section>
+		<footer class="modal-card-foot">
+			<button
+				class="button is-danger"
+				hx-delete="{% url 'alerts:htmx_delete_alert' alert.id %}"
+				hx-target="#alerts-table-content"
+				hx-swap="innerHTML"
+				hx-confirm="Are you sure you want to delete this alert?"
+				hx-on::after-request="if(event.detail.successful) document.getElementById('modal-container').innerHTML = ''">
+				Delete Alert
+			</button>
+			<button class="button" hx-on:click="document.getElementById('modal-container').innerHTML = ''">Close</button>
+		</footer>
+	</div>
+</div>
