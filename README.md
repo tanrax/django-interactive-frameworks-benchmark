@@ -40,10 +40,10 @@ Access at `http://localhost:8000/` - Navigation bar switches between implementat
 
 ## Technology Documentation
 
+- **[Django LiveView](https://django-liveview.andros.dev/)** - Official Django LiveView documentation
 - **[HTMX](https://htmx.org/)** - Official HTMX documentation and examples
+- **[Django Unicorn](https://www.django-unicorn.com/docs/)** - Complete Unicorn documentation
 - **[Django](https://docs.djangoproject.com/)** - Django official documentation (for SSR implementation)
-- **[Django LiveView GitHub](https://github.com/Django-LiveView/django-liveview)** - Source code and examples
-- **[Django Unicorn Docs](https://www.django-unicorn.com/docs/)** - Complete Unicorn documentation
 
 ## Performance Testing
 
