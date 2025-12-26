@@ -1,6 +1,6 @@
-# Alert System - Multi-Technology Demo
+# Django Interactive Frameworks Benchmark
 
-Same alert system, 4 different Django technologies. Compare WebSockets, SSR, HTMX, and Unicorn side-by-side.
+Performance comparison of Django's main interactive frameworks. This project implements the same alert system using four different approaches—Django LiveView (WebSocket), traditional SSR, HTMX (AJAX), and Django Unicorn (reactive components)—to measure and compare their real-world performance, network overhead, and user experience characteristics.
 
 ## Technology Comparison
 
