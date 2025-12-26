@@ -1,6 +1,6 @@
 # Django Interactive Frameworks Benchmark
 
-Performance comparison of Django's main interactive frameworks. This project implements the same alert system using four different approaches—Django LiveView (WebSocket), traditional SSR, HTMX (AJAX), and Django Unicorn (reactive components)—to measure and compare their real-world performance, network overhead, and user experience characteristics.
+Performance comparison of Django's main interactive frameworks. This project implements the same alert system using four different approaches: Django LiveView (WebSocket), traditional SSR, HTMX (AJAX), and Django Unicorn (reactive components). The goal is to measure and compare their real-world performance, network overhead, and user experience characteristics.
 
 ## Technology Comparison
 
