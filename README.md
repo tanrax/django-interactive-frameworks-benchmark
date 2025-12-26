@@ -32,11 +32,18 @@ Access at `http://localhost:8000/` - Navigation bar switches between implementat
 
 ## Dependencies
 
-- `django-liveview` - WebSocket reactive framework
-- `django-htmx==1.22.0` - HTMX middleware
-- `django-unicorn==0.62.0` - Reactive components
-- `channels` + `redis` - WebSocket infrastructure
-- `daphne` - ASGI server
+- **[django-liveview](https://django-liveview.andros.dev/)** - WebSocket reactive framework
+- **[django-htmx](https://django-htmx.readthedocs.io/)** `==1.22.0` - HTMX middleware for Django
+- **[django-unicorn](https://www.django-unicorn.com/)** `==0.62.0` - Reactive components
+- **[Django Channels](https://channels.readthedocs.io/)** + **[Redis](https://redis.io/)** - WebSocket infrastructure
+- **[Daphne](https://github.com/django/daphne)** - ASGI server
+
+## Technology Documentation
+
+- **[HTMX](https://htmx.org/)** - Official HTMX documentation and examples
+- **[Django](https://docs.djangoproject.com/)** - Django official documentation (for SSR implementation)
+- **[Django LiveView GitHub](https://github.com/Django-LiveView/django-liveview)** - Source code and examples
+- **[Django Unicorn Docs](https://www.django-unicorn.com/docs/)** - Complete Unicorn documentation
 
 ## Performance Testing
 
