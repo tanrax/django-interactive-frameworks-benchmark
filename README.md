@@ -66,8 +66,8 @@ All charts indicate that **lower values are better** for optimal performance.
 
 *Average response times across implementations. LiveView (9.35ms) is fastest, followed by HTMX (16.48ms), Unicorn (26.76ms), and SSR (47.25ms).*
 
-#### Network Requests per Action
-![Network Requests Comparison](plot_network_requests.png)
+#### HTTP Requests per Action
+![HTTP Requests Comparison](plot_network_requests.png)
 
 *Number of HTTP requests required per action. LiveView uses 0 HTTP requests (WebSocket), while SSR requires 2 (POST + redirect).*
 
