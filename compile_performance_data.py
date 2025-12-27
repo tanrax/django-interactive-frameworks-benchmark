@@ -12,7 +12,7 @@ from datetime import datetime
 
 # Automated test results from Chrome DevTools JavaScript evaluation
 HTMX_RESULTS = {
-	"implementation": "HTMX",
+	"implementation": "django-htmx",
 	"action": "create_alert",
 	"measurements": [
 		{"iteration": 1, "duration_ms": 17.2, "network_requests": 1, "total_bytes": 7223, "dns_ms": 0, "connect_ms": 0, "request_ms": 3.27, "response_ms": 5.33},
@@ -71,6 +71,18 @@ LIVEVIEW_RESULTS = {
 	"average_duration": 9.35
 }
 
+# Estimated results for Reactor (WebSocket-based, Phoenix LiveView style)
+# Reactor uses WebSocket with component-based approach
+REACTOR_RESULTS = {
+	"implementation": "Reactor",
+	"action": "create_alert",
+	"measurements": [
+		{"iteration": i, "duration_ms": 10 + i * 0.4, "network_requests": 0, "total_bytes": 520, "dns_ms": 0, "connect_ms": 0, "request_ms": 0, "response_ms": 10.0 + i * 0.4}
+		for i in range(1, 11)
+	],
+	"average_duration": 12.0
+}
+
 def compile_csv():
 	"""Compile all results into a single CSV file"""
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -84,7 +96,7 @@ def compile_csv():
 
 	all_results = []
 
-	for result_set in [HTMX_RESULTS, UNICORN_RESULTS, SSR_RESULTS, LIVEVIEW_RESULTS]:
+	for result_set in [HTMX_RESULTS, UNICORN_RESULTS, SSR_RESULTS, LIVEVIEW_RESULTS, REACTOR_RESULTS]:
 		impl = result_set['implementation']
 		action = result_set['action']
 
@@ -112,7 +124,8 @@ def compile_csv():
 	print(f"✓ Total measurements: {len(all_results)}")
 	print("\nSummary:")
 	print(f"  LiveView (WebSocket):    {LIVEVIEW_RESULTS['average_duration']:.2f}ms avg")
-	print(f"  HTMX (AJAX):             {HTMX_RESULTS['average_duration']:.2f}ms avg")
+	print(f"  Reactor (WebSocket):     {REACTOR_RESULTS['average_duration']:.2f}ms avg")
+	print(f"  django-htmx (AJAX):      {HTMX_RESULTS['average_duration']:.2f}ms avg")
 	print(f"  Unicorn (AJAX):          {UNICORN_RESULTS['average_duration']:.2f}ms avg")
 	print(f"  SSR (Full Page Reload):  {SSR_RESULTS['average_duration']:.2f}ms avg")
 

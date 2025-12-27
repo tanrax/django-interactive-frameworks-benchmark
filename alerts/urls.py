@@ -23,4 +23,7 @@ urlpatterns = [
 
 	# Django Unicorn routes
 	path('unicorn/', views.unicorn_index, name='unicorn_index'),
+
+	# Django Reactor routes
+	path('reactor/', views.reactor_index, name='reactor_index'),
 ]

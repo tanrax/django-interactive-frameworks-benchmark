@@ -125,3 +125,8 @@ def htmx_alert_detail(request, alert_id):
 # Django Unicorn Views
 def unicorn_index(request):
 	return render(request, 'alerts/unicorn/index.html')
+
+
+# Django Reactor Views
+def reactor_index(request):
+	return render(request, 'alerts/reactor/index.html')

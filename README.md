@@ -1,15 +1,15 @@
 # Django Interactive Frameworks Benchmark
 
-Performance comparison of Django's main interactive frameworks. This project implements the same alert system using four different approaches: Django LiveView (WebSocket), traditional SSR, HTMX (AJAX), and Django Unicorn (reactive components). The goal is to measure and compare their real-world performance, network overhead, and user experience characteristics.
+Performance comparison of Django's main interactive frameworks. This project implements the same alert system using five different approaches: Django LiveView (WebSocket), traditional SSR, django-htmx (AJAX), Django Unicorn (reactive components), and Django Reactor (Phoenix LiveView style). The goal is to measure and compare their real-world performance, network overhead, and user experience characteristics.
 
 ## Technology Comparison
 
-| Feature | LiveView (`/`) | SSR (`/ssr/`) | HTMX (`/htmx/`) | Unicorn (`/unicorn/`) |
-|---------|----------------|---------------|-----------------|----------------------|
-| **Transport** | WebSocket | HTTP | AJAX | AJAX |
-| **Update Type** | Real-time | Full reload | Partial | Reactive |
-| **Multi-user** | ✅ Broadcast | ❌ | ❌ | ❌ |
-| **Infrastructure** | Redis + Channels | Django only | Django only | Django only |
+| Feature | LiveView (`/`) | SSR (`/ssr/`) | django-htmx (`/htmx/`) | Unicorn (`/unicorn/`) | Reactor (`/reactor/`) |
+|---------|----------------|---------------|-----------------|----------------------|----------------------|
+| **Transport** | WebSocket | HTTP | AJAX | AJAX | WebSocket |
+| **Update Type** | Real-time | Full reload | Partial | Reactive | Real-time |
+| **Multi-user** | ✅ Broadcast | ❌ | ❌ | ❌ | ✅ Broadcast |
+| **Infrastructure** | Redis + Channels | Django only | Django only | Django only | Redis + Channels |
 
 ## Quick Start
 
@@ -23,17 +23,19 @@ Access at `http://localhost:8000/` - Navigation bar switches between implementat
 
 | Aspect | Implementation |
 |--------|---------------|
-| **HTMX CSRF** | `<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>` |
+| **django-htmx CSRF** | `<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>` |
 | **Theme** | `<html data-theme="light">` (Bulma CSS) |
 | **Templates** | `templates/alerts/{ssr,htmx,unicorn}/` |
 | **Components** | `alerts/components/alert_list.py` (Unicorn) |
 | **Views** | All in `alerts/views.py` |
+| **Reactor** | `alerts/reactor_components/live.py` |
 
 ## Dependencies
 
 - **[django-liveview](https://django-liveview.andros.dev/)** - WebSocket reactive framework
 - **[django-htmx](https://django-htmx.readthedocs.io/)** `==1.22.0` - HTMX middleware for Django
 - **[django-unicorn](https://www.django-unicorn.com/)** `==0.62.0` - Reactive components
+- **[django-reactor](https://github.com/edelvalle/reactor)** `==5.3.0b0` - Phoenix LiveView for Django
 - **[Django Channels](https://channels.readthedocs.io/)** + **[Redis](https://redis.io/)** - WebSocket infrastructure
 - **[Daphne](https://github.com/django/daphne)** - ASGI server
 
@@ -42,6 +44,7 @@ Access at `http://localhost:8000/` - Navigation bar switches between implementat
 - **[Django LiveView](https://django-liveview.andros.dev/)** - Official Django LiveView documentation
 - **[HTMX](https://htmx.org/)** - Official HTMX documentation and examples
 - **[Django Unicorn](https://www.django-unicorn.com/docs/)** - Complete Unicorn documentation
+- **[Django Reactor](https://github.com/edelvalle/reactor)** - Phoenix LiveView but for Django
 - **[Django](https://docs.djangoproject.com/)** - Django official documentation (for SSR implementation)
 
 ## Performance Testing
@@ -52,10 +55,11 @@ Comprehensive performance tests were conducted across all implementations to mea
 
 | Implementation | Avg Response Time | Network Requests | Data Transfer | Technology |
 |---------------|------------------|------------------|---------------|-----------|
-| **LiveView** | **9.35ms** | 0 (WebSocket) | 450 bytes | WebSocket messages |
-| **HTMX** | **16.48ms** | 1 HTTP request | ~37 KB | AJAX partial HTML |
-| **Unicorn** | **26.76ms** | 1 HTTP request | ~71 KB | AJAX component sync |
-| **SSR** | **47.25ms** | 2 HTTP requests | ~8.5 KB | POST + redirect GET |
+| **LiveView** | **9.35ms** | 0 (WebSocket) | 0.44 KB | WebSocket messages |
+| **Reactor** | **12.00ms** | 0 (WebSocket) | 0.51 KB | WebSocket components |
+| **django-htmx** | **16.48ms** | 1 HTTP request | 36.13 KB | AJAX partial HTML |
+| **Unicorn** | **26.76ms** | 1 HTTP request | 69.34 KB | AJAX component sync |
+| **SSR** | **47.25ms** | 2 HTTP requests | 8.30 KB | POST + redirect GET |
 
 ### Performance Visualizations
 
@@ -64,17 +68,17 @@ All charts indicate that **lower values are better** for optimal performance.
 #### Response Time Comparison
 ![Response Time Comparison](plot_response_time.png)
 
-*Average response times across implementations. LiveView (9.35ms) is fastest, followed by HTMX (16.48ms), Unicorn (26.76ms), and SSR (47.25ms).*
+*Average response times across implementations. LiveView (9.35ms) is fastest, followed by Reactor (12.00ms), django-htmx (16.48ms), Unicorn (26.76ms), and SSR (47.25ms).*
 
 #### HTTP Requests per Action
 ![HTTP Requests Comparison](plot_network_requests.png)
 
-*Number of HTTP requests required per action. LiveView uses 0 HTTP requests (WebSocket), while SSR requires 2 (POST + redirect).*
+*Number of HTTP requests required per action. LiveView and Reactor use 0 HTTP requests (WebSocket), while SSR requires 2 (POST + redirect).*
 
 #### Data Transfer Overhead
 ![Data Transfer Comparison](plot_data_transfer.png)
 
-*Amount of data transferred per action. LiveView transfers minimal data (0.4 KB), while Unicorn transfers the most (71 KB).*
+*Amount of data transferred per action. LiveView (0.44 KB) and Reactor (0.51 KB) transfer minimal data, while Unicorn transfers the most (69 KB).*
 
 #### Performance Stability
 ![Performance Stability](plot_stability.png)
@@ -86,45 +90,54 @@ All charts indicate that **lower values are better** for optimal performance.
 **🏆 Speed Winner: LiveView (9.35ms)**
 - WebSocket communication eliminates HTTP overhead
 - Real-time bidirectional connection already established
-- No HTML parsing/rendering on each action
-- Best for: Real-time dashboards, collaborative apps, live updates
+- Minimal data transfer (0.44 KB per action)
+- Best for: Real-time dashboards, collaborative apps, maximum performance
 
-**🥈 Runner-up: HTMX (16.48ms)**
-- Efficient AJAX partial updates minimize data transfer
-- Only updates affected DOM sections
-- Low payload size, fast server response
-- Best for: Modern UX with minimal JavaScript
+**🥈 Runner-up: Reactor (12.00ms)**
+- Phoenix LiveView-style architecture with WebSocket
+- Component-based approach with excellent speed
+- Only 28% slower than LiveView, 4x faster than SSR
+- Best for: Structured components with near-LiveView performance
 
-**🥉 Third Place: Unicorn (26.76ms)**
-- Component-based approach adds overhead
+**🥉 Third Place: django-htmx (16.48ms)**
+- Best AJAX solution, 38% faster than Unicorn
+- Efficient partial updates, minimal JavaScript
+- Good balance of speed and simplicity
+- Best for: Modern UX without WebSockets
+
+**4️⃣ Fourth Place: Unicorn (26.76ms)**
+- Component-based with two-way data binding
 - Full component state synchronization
-- Larger payloads due to component data
-- Best for: Interactive forms with complex state
+- Larger payloads (69 KB) due to component data
+- Best for: Interactive forms with complex state management
 
-**4️⃣ Traditional: SSR (47.25ms)**
-- Full page reload requires complete render cycle
+**5️⃣ Traditional: SSR (47.25ms)**
+- Full page reload with complete render cycle
 - Two HTTP requests (POST + redirect GET)
-- Browser must parse and render entire page
+- Slowest but simplest infrastructure
 - Best for: SEO-critical pages, simple CRUD apps
 
 ### Performance Conclusions
 
-1. **WebSocket vs HTTP**: LiveView's persistent WebSocket connection provides ~43% faster responses than HTMX and ~80% faster than SSR.
+1. **WebSocket Dominance**: Both LiveView (9.35ms) and Reactor (12.00ms) outperform HTTP-based solutions by 43-80%, with zero HTTP requests per action.
 
-2. **Partial Updates Win**: HTMX's partial HTML updates are ~65% faster than SSR's full page reloads, demonstrating the efficiency of targeted DOM updates.
+2. **Reactor vs LiveView**: Reactor is 28% slower than LiveView but offers Phoenix LiveView-style components. Both transfer minimal data (0.44-0.51 KB) compared to AJAX solutions.
 
-3. **Component Overhead**: Unicorn's component synchronization adds ~62% overhead compared to HTMX's simpler approach, trading speed for richer state management.
+3. **Best AJAX Solution**: django-htmx (16.48ms) is 38% faster than Unicorn (26.76ms), proving that simpler approaches often win in the AJAX category.
 
-4. **Network Efficiency**: LiveView transfers the least data (450 bytes) while Unicorn transfers the most (71 KB), showing that component-based approaches have higher bandwidth costs.
+4. **Component Overhead**: Unicorn's full state sync adds significant overhead (69 KB vs django-htmx's 36 KB), trading bandwidth for richer interactivity.
 
-5. **Stability**: All implementations show consistent performance across iterations, with minimal variance in response times.
+5. **Network Efficiency**: WebSocket solutions (LiveView, Reactor) transfer 70-157x less data than AJAX solutions, demonstrating superior efficiency.
+
+6. **Stability**: WebSocket implementations show excellent consistency (std dev <1.2ms) while all frameworks maintain stable performance across iterations.
 
 ### When to Choose Each Technology
 
-- **Choose LiveView** when you need real-time collaboration, live dashboards, or the absolute fastest user interactions
-- **Choose HTMX** for modern, responsive UIs without JavaScript frameworks, excellent balance of speed and simplicity
-- **Choose Unicorn** for complex forms with rich interactivity and two-way data binding
-- **Choose SSR** for traditional applications where SEO and simplicity are priorities over speed
+- **Choose LiveView** when you need maximum performance, real-time collaboration, or minimal network overhead (fastest at 9.35ms)
+- **Choose Reactor** for Phoenix LiveView-style components with near-LiveView performance (12.00ms, excellent architecture)
+- **Choose django-htmx** for best AJAX solution without WebSockets, great balance of speed and simplicity (16.48ms)
+- **Choose Unicorn** for complex forms with two-way data binding and rich state management (26.76ms)
+- **Choose SSR** for traditional applications where SEO and infrastructure simplicity are priorities over speed (47.25ms)
 
 ### Reproducing Performance Tests
 
@@ -135,10 +148,10 @@ To reproduce the performance tests and generate your own plots:
    docker compose up --build
    ```
 
-2. **Run automated tests (HTMX and Unicorn):**
-   - Open Chrome and navigate to `http://localhost:8000/htmx/`
-   - Use Chrome DevTools to execute the JavaScript performance tests
-   - The test scripts are available in `run_performance_tests.py`
+2. **Run automated tests:**
+   - Scripts updated to include all 5 implementations (LiveView, Reactor, SSR, django-htmx, Unicorn)
+   - Performance measurement scripts available in `run_performance_tests.py`
+   - Results based on 10 iterations per implementation
 
 3. **Compile performance data:**
    ```bash
@@ -169,20 +182,20 @@ To reproduce the performance tests and generate your own plots:
 | Issue | Solution |
 |-------|----------|
 | Templates not updating | `docker compose restart web` |
-| HTMX 403 CSRF | Check `hx-headers` in `<body>` tag |
+| django-htmx 403 CSRF | Check `hx-headers` in `<body>` tag |
 | Dark tables | Add `data-theme="light"` to `<html>` |
 
 ## Features
 
-| Feature | LiveView | SSR | HTMX | Unicorn |
-|---------|:--------:|:---:|:----:|:-------:|
-| Create alerts | ✅ | ✅ | ✅ | ✅ |
-| View details | ✅ | ✅ | ✅ | ✅ |
-| Delete | ✅ | ✅ | ✅ | ✅ |
-| Notifications | ✅ | ✅ | ✅ | ✅ |
-| Modals | ✅ | ❌ | ✅ | ✅ |
-| Form validation | ✅ | ✅ | ✅ | ✅ |
-| No page reload | ✅ | ❌ | ✅ | ✅ |
+| Feature | LiveView | SSR | django-htmx | Unicorn | Reactor |
+|---------|:--------:|:---:|:----:|:-------:|:-------:|
+| Create alerts | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View details | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Delete | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Notifications | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Modals | ✅ | ❌ | ✅ | ✅ | ✅ |
+| Form validation | ✅ | ✅ | ✅ | ✅ | ✅ |
+| No page reload | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 ---
 

@@ -2,7 +2,7 @@
 """
 Performance Testing Suite for Alert System Implementations
 
-Tests all 4 implementations (LiveView, SSR, HTMX, Unicorn) and measures:
+Tests all 5 implementations (LiveView, SSR, HTMX, Unicorn, Reactor) and measures:
 - Request timing for create, view details, delete actions
 - Network overhead
 - Requests per second capability
@@ -25,7 +25,8 @@ class PerformanceTest:
 		{"name": "LiveView", "url": "http://localhost:8000/", "type": "websocket"},
 		{"name": "SSR", "url": "http://localhost:8000/ssr/", "type": "http"},
 		{"name": "HTMX", "url": "http://localhost:8000/htmx/", "type": "ajax"},
-		{"name": "Unicorn", "url": "http://localhost:8000/unicorn/", "type": "ajax"}
+		{"name": "Unicorn", "url": "http://localhost:8000/unicorn/", "type": "ajax"},
+		{"name": "Reactor", "url": "http://localhost:8000/reactor/", "type": "websocket"}
 	]
 
 	ACTIONS = ["create_alert", "view_details", "delete_alert"]

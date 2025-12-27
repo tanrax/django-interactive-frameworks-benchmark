@@ -2,11 +2,12 @@
 """
 Comprehensive Performance Testing Suite for Alert System
 
-This script conducts automated performance tests across all 4 implementations:
+This script conducts automated performance tests across all 5 implementations:
 - Django LiveView (WebSocket)
 - SSR (Server-Side Rendering)
 - HTMX (AJAX partial updates)
 - Django Unicorn (Reactive components)
+- Django Reactor (Phoenix LiveView style)
 
 Tests performed:
 1. Create Random Alert - measures POST/action timing
@@ -50,6 +51,11 @@ class PerformanceTestRunner:
 				"url": "http://localhost:8000/unicorn/",
 				"create_selector": "button:contains('Add Random Alert')",
 				"type": "ajax"
+			},
+			"Reactor": {
+				"url": "http://localhost:8000/reactor/",
+				"create_selector": "button:contains('Add Random Alert')",
+				"type": "websocket"
 			}
 		}
 
@@ -209,7 +215,7 @@ DevTools MCP tools.
 TESTING PROCESS:
 ----------------
 
-For each implementation (LiveView, SSR, HTMX, Unicorn):
+For each implementation (LiveView, SSR, HTMX, Unicorn, Reactor):
   For each action (Create, View Details, Delete):
     1. Navigate to implementation URL
     2. Execute JavaScript measurement script

@@ -12,12 +12,13 @@ django.setup()
 # Import handlers to ensure they are registered (must be after django.setup())
 import alerts.liveview_components.alerts  # noqa: E402, F401
 from liveview.consumers import LiveViewConsumer  # noqa: E402
+from reactor.urls import websocket_urlpatterns as reactor_ws_patterns  # noqa: E402
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter([
             path('ws/liveview/<str:room_name>/', LiveViewConsumer.as_asgi()),
-        ])
+        ] + reactor_ws_patterns)
     ),
 })

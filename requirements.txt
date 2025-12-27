@@ -6,3 +6,4 @@ django-liveview==2.1.7
 redis==5.2.1
 django-unicorn==0.62.0
 django-htmx==1.22.0
+django-reactor==5.3.0b0

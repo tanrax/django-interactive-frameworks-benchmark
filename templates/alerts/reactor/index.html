@@ -1,0 +1,28 @@
+{% extends "alerts/reactor/base.html" %}
+{% load reactor %}
+
+{% block title %}Home - Alert System Reactor{% endblock %}
+
+{% block content %}
+<section class="section">
+	<div class="container">
+		<h1 class="title">Alert System (Django Reactor)</h1>
+		<h2 class="subtitle">Phoenix LiveView-style reactive components</h2>
+
+		{% component 'XAlertList' %}
+
+		<div class="notification is-info is-light mt-5">
+			<p class="mb-3"><strong>Django Reactor Demo</strong></p>
+			<p class="mb-2">This version uses Django Reactor for reactive updates:</p>
+			<ul style="list-style: disc; margin-left: 1.5rem;">
+				<li><strong>Phoenix LiveView-style:</strong> Server-side components with WebSocket updates</li>
+				<li><strong>Real-time reactivity:</strong> All interactions happen through WebSockets</li>
+				<li><strong>Component-based:</strong> Python classes with declarative templates</li>
+				<li><strong>Minimal JavaScript:</strong> All logic in Python, automatic DOM updates</li>
+				<li><strong>Efficient updates:</strong> Uses morphdom for smart DOM patching</li>
+				<li><strong>Declarative events:</strong> Event handlers defined in templates</li>
+			</ul>
+		</div>
+	</div>
+</section>
+{% endblock %}

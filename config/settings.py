@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
+    'reactor',
     'liveview',
     'django_unicorn',
     'django_htmx',

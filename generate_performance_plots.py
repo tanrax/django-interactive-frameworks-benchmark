@@ -3,7 +3,7 @@
 Generate Performance Comparison Plots
 
 Creates comparative visualizations of performance test results across
-all 4 implementations: LiveView, SSR, HTMX, and Unicorn.
+all 5 implementations: LiveView, Reactor, SSR, HTMX, and Unicorn.
 
 Generates:
 1. Average duration comparison (bar chart)
@@ -30,7 +30,7 @@ def load_latest_csv():
 	latest_csv = max(csv_files, key=lambda x: Path(x).stat().st_mtime)
 	print(f"Loading data from: {latest_csv}")
 
-	data = {'LiveView': [], 'SSR': [], 'HTMX': [], 'Unicorn': []}
+	data = {'LiveView': [], 'Reactor': [], 'SSR': [], 'django-htmx': [], 'Unicorn': []}
 
 	with open(latest_csv, 'r') as f:
 		reader = csv.DictReader(f)
@@ -54,8 +54,8 @@ def plot_average_duration(data, output_file='plot_avg_duration.png'):
 	implementations = list(data.keys())
 	averages = [np.mean([m['duration_ms'] for m in data[impl]]) for impl in implementations]
 
-	# Color scheme
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	# Color scheme (5 implementations)
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bars = ax.bar(implementations, averages, color=colors, alpha=0.8, edgecolor='black')
@@ -81,7 +81,7 @@ def plot_duration_distribution(data, output_file='plot_duration_distribution.png
 	implementations = list(data.keys())
 	durations = [[m['duration_ms'] for m in data[impl]] for impl in implementations]
 
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bp = ax.boxplot(durations, labels=implementations, patch_artist=True,
@@ -143,7 +143,7 @@ def plot_network_overhead(data, output_file='plot_network_overhead.png'):
 	implementations = list(data.keys())
 	avg_bytes = [np.mean([m['total_bytes'] for m in data[impl]]) for impl in implementations]
 
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bars = ax.bar(implementations, avg_bytes, color=colors, alpha=0.8, edgecolor='black')
@@ -168,8 +168,8 @@ def plot_iteration_trends(data, output_file='plot_iteration_trends.png'):
 	"""Line chart showing performance trends across iterations"""
 	fig, ax = plt.subplots(figsize=(12, 6))
 
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
-	markers = ['o', 's', '^', 'd']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
+	markers = ['o', 'D', 's', '^', 'd']
 
 	for (impl, color, marker) in zip(data.keys(), colors, markers):
 		iterations = [m['iteration'] for m in data[impl]]
@@ -192,7 +192,7 @@ def plot_response_time_comparison(data, output_file='plot_response_time.png'):
 	"""Bar chart: Average Response Time - Lower is Better"""
 	implementations = list(data.keys())
 	averages = [np.mean([m['duration_ms'] for m in data[impl]]) for impl in implementations]
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bars = ax.bar(implementations, averages, color=colors, alpha=0.8, edgecolor='black')
@@ -217,10 +217,10 @@ def plot_response_time_comparison(data, output_file='plot_response_time.png'):
 	plt.close()
 
 def plot_network_requests_comparison(data, output_file='plot_network_requests.png'):
-	"""Bar chart: Network Requests - Lower is Better"""
+	"""Bar chart: HTTP Requests - Lower is Better"""
 	implementations = list(data.keys())
 	avg_requests = [np.mean([m['network_requests'] for m in data[impl]]) for impl in implementations]
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bars = ax.bar(implementations, avg_requests, color=colors, alpha=0.8, edgecolor='black')
@@ -231,7 +231,7 @@ def plot_network_requests_comparison(data, output_file='plot_network_requests.pn
 		        ha='center', va='bottom', fontweight='bold', fontsize=11)
 
 	ax.set_ylabel('HTTP Requests per Action', fontweight='bold', fontsize=12)
-	ax.set_title('Network Requests per Action', fontweight='bold', fontsize=14)
+	ax.set_title('HTTP Requests per Action', fontweight='bold', fontsize=14)
 	ax.grid(axis='y', alpha=0.3, linestyle='--')
 
 	# Add "Lower is Better" annotation
@@ -248,7 +248,7 @@ def plot_data_transfer_comparison(data, output_file='plot_data_transfer.png'):
 	"""Bar chart: Data Transfer - Lower is Better"""
 	implementations = list(data.keys())
 	avg_bytes = [np.mean([m['total_bytes'] for m in data[impl]]) / 1024 for impl in implementations]
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
 
 	fig, ax = plt.subplots(figsize=(10, 6))
 	bars = ax.bar(implementations, avg_bytes, color=colors, alpha=0.8, edgecolor='black')
@@ -275,8 +275,8 @@ def plot_data_transfer_comparison(data, output_file='plot_data_transfer.png'):
 def plot_stability_comparison(data, output_file='plot_stability.png'):
 	"""Line chart: Performance Stability - Lower and Flatter is Better"""
 	implementations = list(data.keys())
-	colors = ['#3273dc', '#48c774', '#ffdd57', '#f14668']
-	markers = ['o', 's', '^', 'd']
+	colors = ['#3273dc', '#9b59b6', '#48c774', '#ffdd57', '#f14668']
+	markers = ['o', 'D', 's', '^', 'd']
 
 	fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -335,7 +335,7 @@ def main():
 		print("  - plot_iteration_trends.png      (Performance stability)")
 		print("\n  Individual comparison plots (with 'Lower is Better' indicators):")
 		print("  - plot_response_time.png         (Response time comparison)")
-		print("  - plot_network_requests.png      (Network requests comparison)")
+		print("  - plot_network_requests.png      (HTTP requests comparison)")
 		print("  - plot_data_transfer.png         (Data transfer comparison)")
 		print("  - plot_stability.png             (Performance stability)")
 
