@@ -49,6 +49,13 @@ def load_latest_csv():
 
 	return data, latest_csv
 
+def sort_by_performance(data):
+	"""Sort implementations by average duration (fastest to slowest)"""
+	averages = {impl: np.mean([m['duration_ms'] for m in measurements])
+	            for impl, measurements in data.items()}
+	sorted_impls = sorted(averages.keys(), key=lambda x: averages[x])
+	return {impl: data[impl] for impl in sorted_impls}
+
 def plot_average_duration(data, output_file='plot_avg_duration.png'):
 	"""Bar chart comparing average duration across implementations"""
 	implementations = list(data.keys())
@@ -310,6 +317,10 @@ def main():
 	try:
 		data, csv_file = load_latest_csv()
 		print(f"\nData loaded: {sum(len(v) for v in data.values())} measurements")
+
+		# Sort implementations by performance (fastest to slowest)
+		data = sort_by_performance(data)
+		print(f"Sorted order (fastest to slowest): {', '.join(data.keys())}")
 
 		print("\nGenerating plots...")
 		plot_average_duration(data)
