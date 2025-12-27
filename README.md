@@ -10,7 +10,6 @@ Performance comparison of Django's main interactive frameworks. This project imp
 | **Update Type** | Real-time | Full reload | Partial | Reactive |
 | **Multi-user** | ✅ Broadcast | ❌ | ❌ | ❌ |
 | **Infrastructure** | Redis + Channels | Django only | Django only | Django only |
-| **Best For** | Live dashboards | Traditional apps | Modern UX | Interactive forms |
 
 ## Quick Start
 
