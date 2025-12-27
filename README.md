@@ -66,22 +66,22 @@ Comprehensive performance tests were conducted across all implementations to mea
 All charts indicate that **lower values are better** for optimal performance.
 
 #### Response Time Comparison
-![Response Time Comparison](plot_response_time.png)
+![Response Time Comparison](plot_response_time.png?v=2)
 
 *Average response times across implementations. LiveView (9.35ms) is fastest, followed by Reactor (12.00ms), django-htmx (16.48ms), Unicorn (26.76ms), and SSR (47.25ms).*
 
 #### HTTP Requests per Action
-![HTTP Requests Comparison](plot_network_requests.png)
+![HTTP Requests Comparison](plot_network_requests.png?v=2)
 
 *Number of HTTP requests required per action. LiveView and Reactor use 0 HTTP requests (WebSocket), while SSR requires 2 (POST + redirect).*
 
 #### Data Transfer Overhead
-![Data Transfer Comparison](plot_data_transfer.png)
+![Data Transfer Comparison](plot_data_transfer.png?v=2)
 
 *Amount of data transferred per action. LiveView (0.44 KB) and Reactor (0.51 KB) transfer minimal data, while Unicorn transfers the most (69 KB).*
 
 #### Performance Stability
-![Performance Stability](plot_stability.png)
+![Performance Stability](plot_stability.png?v=2)
 
 *Response time consistency across 10 iterations. Lower and flatter lines indicate better, more stable performance.*
 
