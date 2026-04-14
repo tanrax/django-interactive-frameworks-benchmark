@@ -1,283 +1,278 @@
 #!/usr/bin/env python3
 """
-Comprehensive Performance Testing Suite for Alert System
+Automated performance benchmark for the alert system.
 
-This script conducts automated performance tests across all 5 implementations:
-- Django LiveView (WebSocket)
-- SSR (Server-Side Rendering)
-- HTMX (AJAX partial updates)
-- Django Unicorn (Reactive components)
-- Django Reactor (Phoenix LiveView style)
+Drives each implementation with a headless Chromium via Playwright, measures the
+"Add Random Alert" round-trip, and writes a CSV.
 
-Tests performed:
-1. Create Random Alert - measures POST/action timing
-2. View Alert Details - measures modal/detail page load timing
-3. Delete Alert - measures delete operation timing
+Methodology (unified across all implementations):
+  1. Clear the Alert table via docker compose exec (clean state per impl).
+  2. Navigate fresh to the implementation URL.
+  3. Wait for the UI to be interactive (WebSocket connected, component mounted).
+  4. Run `warmup` throwaway iterations, then `iterations` measured iterations.
+  5. Per iteration: record tbody row count, click "Add Random Alert",
+     wait until tbody row count increases (or, for SSR, until navigation completes),
+     record duration from click to signal.
+  6. Network metrics (HTTP request count, bytes) come from Playwright's
+     response interception during the iteration window.
 
-Results are saved to CSV and visualized with plots.
+Usage:
+    .venv-bench/bin/python run_performance_tests.py
+    .venv-bench/bin/python run_performance_tests.py --iterations 20 --only djust LiveView
+
+Requires Playwright (see README).
 """
 
-import json
+import argparse
+import asyncio
 import csv
+import os
+import sys
 import time
+import urllib.request
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+
+from playwright.async_api import Page, async_playwright
 
 
-class PerformanceTestRunner:
-	"""Orchestrates performance testing across all implementations"""
+BASE_URL = os.environ.get("BENCH_BASE_URL", "http://localhost:8000")
 
-	def __init__(self):
-		self.results = []
-		self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-		self.csv_file = f"performance_results_{self.timestamp}.csv"
-		self.implementations = {
-			"LiveView": {
-				"url": "http://localhost:8000/",
-				"create_selector": "button:contains('Add Random Alert')",
-				"type": "websocket"
-			},
-			"SSR": {
-				"url": "http://localhost:8000/ssr/",
-				"create_selector": "button:contains('Add Random Alert')",
-				"type": "http"
-			},
-			"HTMX": {
-				"url": "http://localhost:8000/htmx/",
-				"create_selector": "button:contains('Add Random Alert')",
-				"type": "ajax"
-			},
-			"Unicorn": {
-				"url": "http://localhost:8000/unicorn/",
-				"create_selector": "button:contains('Add Random Alert')",
-				"type": "ajax"
-			},
-			"Reactor": {
-				"url": "http://localhost:8000/reactor/",
-				"create_selector": "button:contains('Add Random Alert')",
-				"type": "websocket"
-			}
-		}
-
-	def generate_measurement_script(self, action_type):
-		"""Generate JavaScript to measure action performance"""
-		if action_type == "create":
-			return """
-(async () => {
-	const startTime = performance.now();
-	const startMark = performance.mark('action-start');
-
-	// Find and click the "Add Random Alert" button
-	const buttons = Array.from(document.querySelectorAll('button'));
-	const addButton = buttons.find(btn => btn.textContent.includes('Add Random Alert'));
-
-	if (!addButton) {
-		return { error: 'Button not found' };
-	}
-
-	// Record network state before click
-	const perfEntries = performance.getEntriesByType('navigation');
-	const resourcesBefore = performance.getEntriesByType('resource').length;
-
-	// Click button
-	addButton.click();
-
-	// Wait for response (different for each implementation)
-	await new Promise(resolve => {
-		// For SSR: wait for page navigation
-		if (window.location.pathname.includes('/ssr/')) {
-			window.addEventListener('load', resolve, { once: true });
-		}
-		// For HTMX/Unicorn: wait for AJAX
-		else if (typeof htmx !== 'undefined' || typeof Unicorn !== 'undefined') {
-			setTimeout(resolve, 1000); // Wait for AJAX to complete
-		}
-		// For LiveView: wait for WebSocket message
-		else {
-			setTimeout(resolve, 1000); // Wait for WebSocket update
-		}
-	});
-
-	const endTime = performance.now();
-	const duration = endTime - startTime;
-
-	// Get network timing
-	const resourcesAfter = performance.getEntriesByType('resource');
-	const newResources = resourcesAfter.slice(resourcesBefore);
-
-	// Calculate network metrics
-	const networkMetrics = newResources.map(entry => ({
-		name: entry.name,
-		duration: entry.duration,
-		transferSize: entry.transferSize || 0,
-		domainLookupTime: entry.domainLookupEnd - entry.domainLookupStart,
-		connectTime: entry.connectEnd - entry.connectStart,
-		requestTime: entry.responseStart - entry.requestStart,
-		responseTime: entry.responseEnd - entry.responseStart
-	}));
-
-	return {
-		duration: duration,
-		timestamp: new Date().toISOString(),
-		networkRequests: networkMetrics.length,
-		totalTransferSize: networkMetrics.reduce((sum, m) => sum + m.transferSize, 0),
-		networkMetrics: networkMetrics
-	};
-})();
-"""
-		elif action_type == "view_details":
-			return """
-(async () => {
-	const startTime = performance.now();
-
-	// Find first Details button
-	const detailButtons = Array.from(document.querySelectorAll('button, a')).filter(
-		el => el.textContent.includes('Details')
-	);
-
-	if (detailButtons.length === 0) {
-		return { error: 'No details button found' };
-	}
-
-	const button = detailButtons[0];
-	button.click();
-
-	// Wait for modal or page load
-	await new Promise(resolve => setTimeout(resolve, 500));
-
-	const endTime = performance.now();
-	return {
-		duration: endTime - startTime,
-		timestamp: new Date().toISOString()
-	};
-})();
-"""
-		elif action_type == "delete":
-			return """
-(async () => {
-	const startTime = performance.now();
-
-	// Find first Delete button
-	const deleteButtons = Array.from(document.querySelectorAll('button')).filter(
-		el => el.textContent.includes('Delete')
-	);
-
-	if (deleteButtons.length === 0) {
-		return { error: 'No delete button found' };
-	}
-
-	// Auto-confirm dialog if it appears
-	window.confirm = () => true;
-
-	const button = deleteButtons[0];
-	button.click();
-
-	// Wait for deletion to complete
-	await new Promise(resolve => setTimeout(resolve, 500));
-
-	const endTime = performance.now();
-	return {
-		duration: endTime - startTime,
-		timestamp: new Date().toISOString()
-	};
-})();
-"""
-
-	def save_results_to_csv(self):
-		"""Save all collected results to CSV"""
-		if not self.results:
-			print("No results to save")
-			return
-
-		fieldnames = [
-			'timestamp', 'implementation', 'action', 'iteration',
-			'duration_ms', 'network_requests', 'total_bytes',
-			'dns_ms', 'connect_ms', 'request_ms', 'response_ms'
-		]
-
-		with open(self.csv_file, 'w', newline='') as f:
-			writer = csv.DictWriter(f, fieldnames=fieldnames)
-			writer.writeheader()
-			writer.writerows(self.results)
-
-		print(f"\n✓ Results saved to: {self.csv_file}")
-
-	def print_instructions(self):
-		"""Print instructions for manual Chrome DevTools testing"""
-		print("""
-╔════════════════════════════════════════════════════════════════════════════╗
-║                    PERFORMANCE TESTING INSTRUCTIONS                        ║
-╔════════════════════════════════════════════════════════════════════════════╗
-
-This script will guide you through systematic performance testing using Chrome
-DevTools MCP tools.
-
-TESTING PROCESS:
-----------------
-
-For each implementation (LiveView, SSR, HTMX, Unicorn, Reactor):
-  For each action (Create, View Details, Delete):
-    1. Navigate to implementation URL
-    2. Execute JavaScript measurement script
-    3. Record timing data
-    4. Repeat 10 times for statistical significance
-
-ACTIONS TO TEST:
-----------------
-1. CREATE RANDOM ALERT - Measures form submission/action timing
-2. VIEW DETAILS - Measures modal/detail page load timing
-3. DELETE ALERT - Measures delete operation timing
-
-DATA TO COLLECT:
-----------------
-- Action duration (milliseconds)
-- Number of network requests
-- Total bytes transferred
-- DNS lookup time
-- Connection time
-- Request/Response time
-
-The measurement scripts use performance.now() for high-precision timing
-and the Performance API to capture network metrics.
-
-Press Enter to see the test execution plan...
-""")
-		input()
-
-		print("\nTEST EXECUTION PLAN:")
-		print("=" * 80)
-		for impl_name, impl_config in self.implementations.items():
-			print(f"\n{impl_name} ({impl_config['type'].upper()}):")
-			print(f"  URL: {impl_config['url']}")
-			print(f"  Actions: Create (10x), View Details (10x), Delete (10x)")
-			print(f"  Total tests: 30")
-
-		total_tests = len(self.implementations) * 3 * 10
-		print(f"\nTOTAL TESTS: {total_tests}")
-		print("=" * 80)
+IMPLEMENTATIONS = [
+	{"name": "LiveView",    "path": "/",         "navigates": False, "ready_wait_ms": 1500},
+	{"name": "SSR",         "path": "/ssr/",     "navigates": True,  "ready_wait_ms": 200},
+	{"name": "HTMX",        "path": "/htmx/",    "navigates": False, "ready_wait_ms": 300},
+	{"name": "Unicorn",     "path": "/unicorn/", "navigates": False, "ready_wait_ms": 1200},
+	{"name": "Reactor",     "path": "/reactor/", "navigates": False, "ready_wait_ms": 2500},
+	{"name": "djust",       "path": "/djust/",   "navigates": False, "ready_wait_ms": 1500},
+]
 
 
-def main():
-	runner = PerformanceTestRunner()
-	runner.print_instructions()
+@dataclass
+class IterationResult:
+	implementation: str
+	iteration: int
+	duration_ms: float
+	http_requests: int
+	response_bytes: int
+	error: Optional[str] = None
 
-	print("\n\nMANUAL TESTING MODE")
-	print("=" * 80)
-	print("\nUse Chrome MCP tools to execute tests:")
-	print("\n1. Navigate to each implementation URL")
-	print("2. Use mcp__chrome-devtools__evaluate_script with the measurement scripts")
-	print("3. Collect timing data from JavaScript results")
-	print("4. Record results manually or via automation")
 
-	print(f"\n\nMeasurement scripts are available in this script.")
-	print(f"Results will be saved to: {runner.csv_file}")
-	print("\nGenerate measurement script for an action:")
-	print("  - runner.generate_measurement_script('create')")
-	print("  - runner.generate_measurement_script('view_details')")
-	print("  - runner.generate_measurement_script('delete')")
+class WSCounter:
+	"""Cumulative WebSocket frame byte counter. Must be installed on the page
+	BEFORE navigation so we see the initial `websocket` event."""
 
-	return runner
+	def __init__(self, debug: bool = False) -> None:
+		self.total_bytes = 0
+		self.frames_seen = 0
+		self._debug = debug
+
+	def install(self, page: Page) -> None:
+		def on_ws(ws) -> None:
+			if self._debug:
+				print(f"      [ws] opened url={ws.url}", flush=True)
+			def count(frame) -> None:
+				self.frames_seen += 1
+				payload = None
+				if hasattr(frame, "payload"):
+					payload = frame.payload
+				elif isinstance(frame, dict):
+					payload = frame.get("payload")
+				else:
+					payload = frame
+				added = 0
+				if isinstance(payload, str):
+					added = len(payload.encode("utf-8"))
+				elif isinstance(payload, (bytes, bytearray)):
+					added = len(payload)
+				self.total_bytes += added
+				if self._debug and self.frames_seen <= 5:
+					print(f"      [ws] frame type={type(frame).__name__} payload_type={type(payload).__name__} added={added}", flush=True)
+			ws.on("framesent", count)
+			ws.on("framereceived", count)
+			ws.on("close", lambda _ws=None: self._debug and print("      [ws] closed", flush=True))
+		page.on("websocket", on_ws)
+
+
+class HTTPCollector:
+	"""Per-iteration HTTP response collector. Fetches bodies via response.body()
+	after the duration window so timing isn't affected."""
+
+	def __init__(self) -> None:
+		self.http_requests = 0
+		self._responses: list = []
+
+	def on_response(self, response) -> None:
+		if response.request.resource_type in {"document", "xhr", "fetch"}:
+			self.http_requests += 1
+			self._responses.append(response)
+
+	async def compute_http_bytes(self) -> int:
+		total = 0
+		for r in self._responses:
+			try:
+				body = await r.body()
+				total += len(body) if body else 0
+			except Exception:
+				pass
+		return total
+
+
+def clear_alerts() -> None:
+	"""Wipe Alert table via the /_bench/clear/ HTTP endpoint."""
+	req = urllib.request.Request(f"{BASE_URL}/_bench/clear/", data=b"", method="POST")
+	with urllib.request.urlopen(req, timeout=10) as resp:
+		if resp.status != 200:
+			raise RuntimeError(f"clear_alerts failed: HTTP {resp.status}")
+
+
+def count_rows_js() -> str:
+	"""JS expression counting alert rows, excluding the 'No alerts yet' placeholder."""
+	return """
+		(() => {
+			const rows = Array.from(document.querySelectorAll('tbody tr'));
+			return rows.filter(r => !r.textContent.includes('No alerts yet')).length;
+		})()
+	"""
+
+
+async def wait_for_ready(page: Page, impl: dict) -> None:
+	"""Give the page a moment for WS connections / hydration to settle."""
+	await page.wait_for_selector("button:has-text('Add Random Alert')", timeout=10_000)
+	await page.wait_for_timeout(impl["ready_wait_ms"])
+
+
+async def run_one_iteration(page: Page, impl: dict, iteration: int, ws: WSCounter) -> IterationResult:
+	http = HTTPCollector()
+	page.on("response", http.on_response)
+	ws_before = ws.total_bytes
+	try:
+		before = await page.evaluate(count_rows_js())
+		start = time.perf_counter()
+
+		click_expr = """
+			(() => {
+				const b = Array.from(document.querySelectorAll('button'))
+					.find(x => x.textContent.trim() === 'Add Random Alert');
+				if (!b) throw new Error('Add Random Alert button not found');
+				b.click();
+			})()
+		"""
+
+		if impl["navigates"]:
+			async with page.expect_navigation(wait_until="load", timeout=10_000):
+				await page.evaluate(click_expr)
+		else:
+			await page.evaluate(click_expr)
+			await page.wait_for_function(
+				f"({count_rows_js()}) > {before}",
+				timeout=10_000,
+			)
+
+		duration_ms = (time.perf_counter() - start) * 1000.0
+		# Give any trailing WS frames a moment to arrive before snapshotting.
+		await asyncio.sleep(0.05)
+		http_bytes = await http.compute_http_bytes()
+		ws_bytes = ws.total_bytes - ws_before
+		return IterationResult(
+			implementation=impl["name"],
+			iteration=iteration,
+			duration_ms=duration_ms,
+			http_requests=http.http_requests,
+			response_bytes=http_bytes + ws_bytes,
+		)
+	except Exception as e:
+		try:
+			http_bytes = await http.compute_http_bytes()
+		except Exception:
+			http_bytes = 0
+		ws_bytes = ws.total_bytes - ws_before
+		return IterationResult(
+			implementation=impl["name"],
+			iteration=iteration,
+			duration_ms=0.0,
+			http_requests=http.http_requests,
+			response_bytes=http_bytes + ws_bytes,
+			error=str(e),
+		)
+	finally:
+		page.remove_listener("response", http.on_response)
+
+
+async def benchmark_impl(browser, impl: dict, iterations: int, warmup: int) -> list[IterationResult]:
+	print(f"  → {impl['name']}: resetting DB", flush=True)
+	clear_alerts()
+	context = await browser.new_context()
+	page = await context.new_page()
+	ws_counter = WSCounter(debug=os.environ.get("BENCH_DEBUG_WS") == "1")
+	ws_counter.install(page)
+	results: list[IterationResult] = []
+	try:
+		print(f"    navigating {BASE_URL}{impl['path']}", flush=True)
+		await page.goto(f"{BASE_URL}{impl['path']}", wait_until="load")
+		await wait_for_ready(page, impl)
+
+		for w in range(warmup):
+			r = await run_one_iteration(page, impl, iteration=-(w + 1), ws=ws_counter)
+			if r.error:
+				print(f"    warmup {w} FAILED: {r.error}", flush=True)
+				return results + [r]
+			if impl["navigates"]:
+				await wait_for_ready(page, impl)
+			await asyncio.sleep(0.2)
+
+		for i in range(iterations):
+			r = await run_one_iteration(page, impl, iteration=i, ws=ws_counter)
+			results.append(r)
+			msg = f"    iter {i}: {r.duration_ms:.2f} ms, {r.http_requests} req, {r.response_bytes} B"
+			if r.error:
+				msg += f"  ERROR: {r.error}"
+			print(msg, flush=True)
+			if impl["navigates"]:
+				await wait_for_ready(page, impl)
+			await asyncio.sleep(0.25)
+	finally:
+		await context.close()
+	return results
+
+
+async def main_async(iterations: int, warmup: int, only: list[str]) -> Path:
+	ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+	out = Path(f"performance_results_{ts}.csv")
+	impls = [i for i in IMPLEMENTATIONS if not only or i["name"] in only]
+
+	all_results: list[IterationResult] = []
+	async with async_playwright() as p:
+		browser = await p.chromium.launch(headless=True)
+		try:
+			for impl in impls:
+				print(f"\n=== {impl['name']} ===", flush=True)
+				all_results.extend(await benchmark_impl(browser, impl, iterations, warmup))
+		finally:
+			await browser.close()
+
+	with out.open("w", newline="") as f:
+		writer = csv.writer(f)
+		writer.writerow(["timestamp", "implementation", "iteration", "duration_ms", "http_requests", "response_bytes", "error"])
+		now = datetime.now().isoformat()
+		for r in all_results:
+			writer.writerow([now, r.implementation, r.iteration, f"{r.duration_ms:.3f}", r.http_requests, r.response_bytes, r.error or ""])
+
+	print(f"\n✓ Wrote {out}", flush=True)
+	return out
+
+
+def main() -> int:
+	ap = argparse.ArgumentParser()
+	ap.add_argument("--iterations", type=int, default=10)
+	ap.add_argument("--warmup", type=int, default=2)
+	ap.add_argument("--only", nargs="*", default=[], help="Subset of impl names")
+	args = ap.parse_args()
+	asyncio.run(main_async(args.iterations, args.warmup, args.only))
+	return 0
 
 
 if __name__ == "__main__":
-	runner = main()
+	sys.exit(main())

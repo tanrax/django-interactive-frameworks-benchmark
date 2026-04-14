@@ -8,3 +8,6 @@ media/
 .vscode/
 .idea/
 *.log
+logs/
+performance_results_*.csv
+plot_*.png

@@ -12,4 +12,4 @@ COPY . .
 
 RUN chmod +x /app/manage.py
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--ws", "websockets"]
