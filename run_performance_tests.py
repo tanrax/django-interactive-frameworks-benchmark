@@ -18,7 +18,7 @@ Methodology (unified across all implementations):
 
 Usage:
     .venv-bench/bin/python run_performance_tests.py
-    .venv-bench/bin/python run_performance_tests.py --iterations 20 --only djust LiveView
+    python run_performance_tests.py --iterations 20 --only djust "Django LiveView"
 
 Requires Playwright (see README).
 """
@@ -41,7 +41,7 @@ from playwright.async_api import Page, async_playwright
 BASE_URL = os.environ.get("BENCH_BASE_URL", "http://localhost:8000")
 
 IMPLEMENTATIONS = [
-	{"name": "LiveView",    "path": "/",         "navigates": False, "ready_wait_ms": 1500},
+	{"name": "Django LiveView", "path": "/",         "navigates": False, "ready_wait_ms": 1500},
 	{"name": "SSR",         "path": "/ssr/",     "navigates": True,  "ready_wait_ms": 200},
 	{"name": "HTMX",        "path": "/htmx/",    "navigates": False, "ready_wait_ms": 300},
 	{"name": "Unicorn",     "path": "/unicorn/", "navigates": False, "ready_wait_ms": 1200},

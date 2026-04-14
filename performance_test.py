@@ -2,7 +2,7 @@
 """
 Performance Testing Suite for Alert System Implementations
 
-Tests all 5 implementations (LiveView, SSR, HTMX, Unicorn, Reactor) and measures:
+Tests all 5 implementations (Django LiveView, SSR, HTMX, Unicorn, Reactor) and measures:
 - Request timing for create, view details, delete actions
 - Network overhead
 - Requests per second capability
@@ -22,7 +22,7 @@ class PerformanceTest:
 	"""Performance testing orchestrator for Alert System implementations"""
 
 	IMPLEMENTATIONS = [
-		{"name": "LiveView", "url": "http://localhost:8000/", "type": "websocket"},
+		{"name": "Django LiveView", "url": "http://localhost:8000/", "type": "websocket"},
 		{"name": "SSR", "url": "http://localhost:8000/ssr/", "type": "http"},
 		{"name": "HTMX", "url": "http://localhost:8000/htmx/", "type": "ajax"},
 		{"name": "Unicorn", "url": "http://localhost:8000/unicorn/", "type": "ajax"},

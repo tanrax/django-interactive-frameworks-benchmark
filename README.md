@@ -4,7 +4,7 @@ Performance comparison of Django's main interactive frameworks. This project imp
 
 ## Technology Comparison
 
-| Feature | LiveView (`/`) | SSR (`/ssr/`) | django-htmx (`/htmx/`) | Unicorn (`/unicorn/`) | Reactor (`/reactor/`) | djust (`/djust/`) |
+| Feature | Django LiveView (`/`) | SSR (`/ssr/`) | django-htmx (`/htmx/`) | Unicorn (`/unicorn/`) | Reactor (`/reactor/`) | djust (`/djust/`) |
 |---------|----------------|---------------|-----------------|----------------------|----------------------|-------------------|
 | **Transport** | WebSocket | HTTP | AJAX | AJAX | WebSocket | WebSocket |
 | **Update Type** | Real-time | Full reload | Partial | Reactive | Real-time | Real-time (VDOM patches) |
@@ -84,7 +84,7 @@ docker compose --profile bench run --rm bench python generate_plotly_plots.py
 The CSV lands in the project root as `performance_results_YYYYMMDD_HHMMSS.csv` (git-ignored). You can also filter which implementations to measure:
 
 ```bash
-docker compose --profile bench run --rm bench python run_performance_tests.py --only djust LiveView --iterations 20
+docker compose --profile bench run --rm bench python run_performance_tests.py --only djust "Django LiveView" --iterations 20
 ```
 
 ### Scripts
@@ -106,8 +106,8 @@ docker compose --profile bench run --rm bench python run_performance_tests.py --
 
 ## Features
 
-| Feature | LiveView | SSR | django-htmx | Unicorn | Reactor | djust |
-|---------|:--------:|:---:|:----:|:-------:|:-------:|:-----:|
+| Feature | Django LiveView | SSR | django-htmx | Unicorn | Reactor | djust |
+|---------|:---------------:|:---:|:----:|:-------:|:-------:|:-----:|
 | Create alerts | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View details | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Delete | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
