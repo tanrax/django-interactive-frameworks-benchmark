@@ -59,9 +59,7 @@
 	</div>
 
 	<!-- Detail Modal -->
-	{% if show_modal %}
-	{% with selected_alert=this.get_selected_alert %}
-	{% if selected_alert %}
+	{% if show_modal and selected_alert %}
 	<div class="modal is-active">
 		<div class="modal-background" {% on 'click' 'close_modal' %}></div>
 		<div class="modal-card">
@@ -105,8 +103,6 @@
 			</footer>
 		</div>
 	</div>
-	{% endif %}
-	{% endwith %}
 	{% endif %}
 
 	<!-- Create Modal -->

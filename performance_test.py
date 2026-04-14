@@ -26,7 +26,8 @@ class PerformanceTest:
 		{"name": "SSR", "url": "http://localhost:8000/ssr/", "type": "http"},
 		{"name": "HTMX", "url": "http://localhost:8000/htmx/", "type": "ajax"},
 		{"name": "Unicorn", "url": "http://localhost:8000/unicorn/", "type": "ajax"},
-		{"name": "Reactor", "url": "http://localhost:8000/reactor/", "type": "websocket"}
+		{"name": "Reactor", "url": "http://localhost:8000/reactor/", "type": "websocket"},
+		{"name": "djust", "url": "http://localhost:8000/djust/", "type": "websocket"}
 	]
 
 	ACTIONS = ["create_alert", "view_details", "delete_alert"]

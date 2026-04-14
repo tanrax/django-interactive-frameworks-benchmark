@@ -1,8 +1,23 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from django.contrib import messages
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from .models import Alert
 from .forms import AlertForm
 import random
+
+
+@csrf_exempt
+@require_POST
+def bench_clear_alerts(request):
+	"""Endpoint used by the benchmark runner to wipe alerts between impls.
+	Only available when DEBUG is on."""
+	if not settings.DEBUG:
+		raise Http404()
+	count, _ = Alert.objects.all().delete()
+	return JsonResponse({"ok": True, "deleted": count})
 
 
 def index(request):

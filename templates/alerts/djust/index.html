@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Alert System - djust</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+</head>
+<body class="has-background-white">
+	{% csrf_token %}
+
+	<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+		<div class="navbar-brand">
+			<div class="navbar-item">
+				<strong>Alert System Demo</strong>
+			</div>
+		</div>
+		<div class="navbar-menu">
+			<div class="navbar-start">
+				<a href="/" class="navbar-item">Django LiveView</a>
+				<a href="/ssr/" class="navbar-item">SSR</a>
+				<a href="/htmx/" class="navbar-item">HTMX</a>
+				<a href="/unicorn/" class="navbar-item">Django Unicorn</a>
+				<a href="/reactor/" class="navbar-item">Django Reactor</a>
+				<a href="/djust/" class="navbar-item is-active has-background-primary has-text-white">djust</a>
+			</div>
+		</div>
+	</nav>
+
+	<section class="section">
+		<div class="container">
+			<h1 class="title">Alert System (djust)</h1>
+			<h2 class="subtitle">Rust-powered reactive components over WebSocket</h2>
+
+			<div dj-root dj-view="alerts.djust_components.live.AlertLiveView">
+				<div class="table-container">
+					<table class="table is-fullwidth is-striped">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Type</th>
+								<th>Description</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for alert in alerts %}
+							<tr data-key="{{ alert.id }}">
+								<td>{{ alert.id }}</td>
+								<td>
+									<span class="tag {% if alert.type == 'INFO' %}is-info{% elif alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+										{{ alert.type }}
+									</span>
+								</td>
+								<td>{{ alert.description|truncatewords:10 }}</td>
+								<td>
+									<button
+										dj-click="show_detail"
+										dj-value-alert_id="{{ alert.id }}"
+										class="button is-small is-info">
+										Details
+									</button>
+									<button
+										dj-click="delete_alert"
+										dj-value-alert_id="{{ alert.id }}"
+										dj-confirm="Are you sure you want to delete this alert?"
+										class="button is-small is-danger ml-1">
+										Delete
+									</button>
+								</td>
+							</tr>
+							{% empty %}
+							<tr>
+								<td colspan="4" class="has-text-centered">No alerts yet</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="mt-5">
+					<button dj-click="create_random_alert" class="button is-primary">
+						Add Random Alert
+					</button>
+					<button dj-click="show_create_form" class="button is-link ml-2">
+						New Alert Form
+					</button>
+				</div>
+
+				{% if show_modal %}{% if selected_alert %}
+				<div class="modal is-active">
+					<div class="modal-background" dj-click="close_modal"></div>
+					<div class="modal-card">
+						<header class="modal-card-head">
+							<p class="modal-card-title">Alert #{{ selected_alert.id }} Details</p>
+							<button class="delete" aria-label="close" dj-click="close_modal"></button>
+						</header>
+						<section class="modal-card-body">
+							<div class="field">
+								<label class="label">ID</label>
+								<p>{{ selected_alert.id }}</p>
+							</div>
+							<div class="field">
+								<label class="label">Type</label>
+								<p>
+									<span class="tag is-large {% if selected_alert.type == 'INFO' %}is-info{% elif selected_alert.type == 'WARNING' %}is-warning{% else %}is-danger{% endif %}">
+										{{ selected_alert.type }}
+									</span>
+								</p>
+							</div>
+							<div class="field">
+								<label class="label">Description</label>
+								<p>{{ selected_alert.description }}</p>
+							</div>
+							<div class="field">
+								<label class="label">Created At</label>
+								<p>{{ selected_alert.created_at }}</p>
+							</div>
+						</section>
+						<footer class="modal-card-foot">
+							<button
+								dj-click="delete_alert"
+								dj-value-alert_id="{{ selected_alert.id }}"
+								dj-confirm="Are you sure you want to delete this alert?"
+								class="button is-danger">
+								Delete Alert
+							</button>
+							<button dj-click="close_modal" class="button">Close</button>
+						</footer>
+					</div>
+				</div>
+				{% endif %}{% endif %}
+
+				{% if show_create_modal %}
+				<div class="modal is-active">
+					<div class="modal-background" dj-click="close_create_modal"></div>
+					<div class="modal-card">
+						<header class="modal-card-head">
+							<p class="modal-card-title">Create New Alert</p>
+							<button class="delete" aria-label="close" dj-click="close_create_modal"></button>
+						</header>
+						<section class="modal-card-body">
+							<div class="field">
+								<label class="label">Type</label>
+								<div class="control">
+									<div class="select is-fullwidth">
+										<select dj-change="update_type">
+											<option value="" {% if form_type == "" %}selected{% else %}{% endif %}>---------</option>
+											<option value="INFO" {% if form_type == "INFO" %}selected{% else %}{% endif %}>Info</option>
+											<option value="WARNING" {% if form_type == "WARNING" %}selected{% else %}{% endif %}>Warning</option>
+											<option value="CRITICAL" {% if form_type == "CRITICAL" %}selected{% else %}{% endif %}>Critical</option>
+										</select>
+									</div>
+								</div>
+								{% if form_errors.type %}
+									<p class="help is-danger">{{ form_errors.type.0 }}</p>
+								{% endif %}
+							</div>
+							<div class="field">
+								<label class="label">Description</label>
+								<div class="control">
+									<textarea
+										dj-input="update_description"
+										class="textarea"
+										rows="4">{{ form_description }}</textarea>
+								</div>
+								{% if form_errors.description %}
+									<p class="help is-danger">{{ form_errors.description.0 }}</p>
+								{% endif %}
+							</div>
+							<div class="field is-grouped">
+								<div class="control">
+									<button dj-click="create_alert" class="button is-primary">Create Alert</button>
+								</div>
+								<div class="control">
+									<button dj-click="close_create_modal" class="button is-light">Cancel</button>
+								</div>
+							</div>
+						</section>
+					</div>
+				</div>
+				{% endif %}
+			</div>
+
+			<div class="notification is-info is-light mt-5">
+				<p class="mb-3"><strong>djust Demo</strong></p>
+				<p class="mb-2">This version uses djust for Rust-powered reactive updates:</p>
+				<ul style="list-style: disc; margin-left: 1.5rem;">
+					<li><strong>Rust-powered core:</strong> Template engine and Virtual DOM diffing in native Rust</li>
+					<li><strong>Phoenix LiveView-style:</strong> Server-side components with WebSocket updates</li>
+					<li><strong>Minimal payloads:</strong> Only changed DOM patches are sent over the wire</li>
+					<li><strong>No build step:</strong> ~29KB gzipped client JavaScript, no bundling needed</li>
+					<li><strong>Django compatible:</strong> Works with existing Django templates and tags</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+</body>
+</html>

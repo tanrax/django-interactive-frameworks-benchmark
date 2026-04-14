@@ -1,9 +1,12 @@
 from django.urls import path
 from . import views
+from .djust_components.live import AlertLiveView
 
 app_name = 'alerts'
 
 urlpatterns = [
+	path('_bench/clear/', views.bench_clear_alerts, name='bench_clear_alerts'),
+
 	path('', views.index, name='index'),
 
 	# SSR (Standard Django) routes
@@ -26,4 +29,7 @@ urlpatterns = [
 
 	# Django Reactor routes
 	path('reactor/', views.reactor_index, name='reactor_index'),
+
+	# djust routes
+	path('djust/', AlertLiveView.as_view(), name='djust_index'),
 ]

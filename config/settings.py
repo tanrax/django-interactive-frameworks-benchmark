@@ -10,7 +10,6 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
-    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,7 +21,18 @@ INSTALLED_APPS = [
     'liveview',
     'django_unicorn',
     'django_htmx',
+    'djust',
     'alerts.apps.AlertsConfig',
+]
+
+LIVEVIEW_CONFIG = {
+    'use_websocket': True,
+    'css_framework': None,
+}
+
+SILENCED_SYSTEM_CHECKS = [
+    'djust.A001',
+    'djust.A030',
 ]
 
 MIDDLEWARE = [
