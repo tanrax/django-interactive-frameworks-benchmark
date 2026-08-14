@@ -119,3 +119,7 @@ docker compose --profile bench run --rm bench python run_performance_tests.py --
 ---
 
 **MIT License** - Reference implementation for Django web technologies
+
+## Contributing
+
+Contributions are welcome! Please see the [contribution guidelines](https://git.andros.dev/andros/contribute) for instructions on how to submit issues or pull requests.
