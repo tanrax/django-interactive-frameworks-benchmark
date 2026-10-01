@@ -41,7 +41,7 @@ Access at `http://localhost:8000/` - Navigation bar switches between implementat
 - **[django-htmx](https://django-htmx.readthedocs.io/)** `==1.22.0` - HTMX middleware for Django
 - **[django-unicorn](https://www.django-unicorn.com/)** `==0.62.0` - Reactive components
 - **[django-reactor](https://github.com/edelvalle/reactor)** `==5.3.0b0` - Phoenix LiveView for Django
-- **[djust](https://djust.org/)** `==0.4.2` - Rust-powered Phoenix LiveView-style framework for Django
+- **[djust](https://djust.org/)** `>=0.9.5` - Rust-powered Phoenix LiveView-style framework for Django
 - **[Django Channels](https://channels.readthedocs.io/)** + **[Redis](https://redis.io/)** - WebSocket infrastructure
 - **[Uvicorn](https://www.uvicorn.org/)** - ASGI server
 
